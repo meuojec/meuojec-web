@@ -45,3 +45,5 @@ Datos_Images/
 
 # Scripts de sincronizacion (contienen rutas y logica interna)
 scripts/
+
+.vercel
