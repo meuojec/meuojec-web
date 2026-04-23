@@ -1,0 +1,42 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import FichaMiembroPdf from "@/lib/pdfs/FichaMiembroPdf";
+import { pdf } from "@react-pdf/renderer";
+import React from "react";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(_req: Request, { params }: { params: Promise<{ rut: string }> }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
+
+  const rut = ((await params).rut || "").trim().toUpperCase().replace(/\./g, "");
+
+  const { data: miembro, error } = await supabase
+    .from("miembros")
+    .select("*")
+    .eq("rut", rut)
+    .maybeSingle();
+
+  if (error || !miembro)
+    return NextResponse.json({ error: "Miembro no encontrado" }, { status: 404 });
+
+  let fotoUrl: string | null = miembro.foto_url ?? null;
+  if (!fotoUrl && miembro.foto_path) {
+    const { data } = supabase.storage.from("fotos-identidad").getPublicUrl(miembro.foto_path);
+    fotoUrl = data.publicUrl ?? null;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const doc = React.createElement(FichaMiembroPdf, { miembro, fotoUrl }) as any;
+  const stream = await pdf(doc).toBuffer();
+
+  return new NextResponse(stream as unknown as BodyInit, {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `inline; filename="ficha-${miembro.rut}.pdf"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}
