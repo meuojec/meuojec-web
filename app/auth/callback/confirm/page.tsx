@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function AuthConfirmPage() {
+function AuthConfirmInner() {
   const router = useRouter();
   const sp = useSearchParams();
 
@@ -18,14 +18,12 @@ export default function AuthConfirmPage() {
 
     (async () => {
       try {
-        // 1) Si Supabase devolvió error explícito por querystring
         if (error) {
           const msg = errorDesc || "Link inválido o expirado";
           router.replace(`/login?error=${encodeURIComponent(msg)}`);
           return;
         }
 
-        // 2) Si viene con ?code=..., lo intercambiamos por sesión (PKCE)
         if (code) {
           const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
           if (exErr) {
@@ -36,7 +34,6 @@ export default function AuthConfirmPage() {
           }
         }
 
-        // 3) Confirmamos sesión ya establecida
         const { data } = await supabase.auth.getSession();
         if (data.session) {
           router.replace(next);
@@ -50,10 +47,24 @@ export default function AuthConfirmPage() {
   }, [router, sp]);
 
   return (
+    <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
+      Procesando acceso...
+    </div>
+  );
+}
+
+export default function AuthConfirmPage() {
+  return (
     <div className="min-h-screen bg-[#0b0b0b] text-white flex items-center justify-center p-6">
-      <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
-        Procesando acceso...
-      </div>
+      <Suspense
+        fallback={
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-6">
+            Cargando...
+          </div>
+        }
+      >
+        <AuthConfirmInner />
+      </Suspense>
     </div>
   );
 }
