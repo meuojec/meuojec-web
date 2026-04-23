@@ -6,12 +6,13 @@ import { pdf } from "@react-pdf/renderer";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_req: Request, { params }: { params: { rut: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ rut: string }> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
 
-  const rut = (params.rut || "").trim().toUpperCase().replace(/\./g, "");
+  const { rut: rutRaw } = await params;
+  const rut = (rutRaw || "").trim().toUpperCase().replace(/\./g, "");
 
   const { data: miembro, error } = await supabase
     .from("miembros")
@@ -29,7 +30,6 @@ export async function GET(_req: Request, { params }: { params: { rut: string } }
     fotoUrl = data.publicUrl ?? null;
   }
 
-  // ✅ SIN JSX:
   const doc = React.createElement(FichaMiembroPdf as any, { miembro, fotoUrl });
   const buf = await (pdf as any)(doc).toBuffer();
 

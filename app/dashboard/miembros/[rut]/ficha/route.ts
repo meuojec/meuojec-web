@@ -28,11 +28,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ rut: st
     fotoUrl = data.publicUrl ?? null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const doc = React.createElement(FichaMiembroPdf, { miembro, fotoUrl }) as any;
-  const stream = await pdf(doc).toBuffer();
+  const doc = React.createElement(FichaMiembroPdf as any, { miembro, fotoUrl });
+  const buf = await (pdf as any)(doc).toBuffer();
 
-  return new NextResponse(stream as unknown as BodyInit, {
+  return new NextResponse(buf as unknown as BodyInit, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `inline; filename="ficha-${miembro.rut}.pdf"`,
