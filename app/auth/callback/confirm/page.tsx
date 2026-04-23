@@ -10,7 +10,6 @@ function AuthConfirmInner() {
 
   useEffect(() => {
     const supabase = createClient();
-
     const next = sp.get("next") || "/dashboard";
     const code = sp.get("code");
     const error = sp.get("error");
@@ -19,21 +18,16 @@ function AuthConfirmInner() {
     (async () => {
       try {
         if (error) {
-          const msg = errorDesc || "Link inválido o expirado";
-          router.replace(`/login?error=${encodeURIComponent(msg)}`);
+          router.replace(`/login?error=${encodeURIComponent(errorDesc || "Link inválido o expirado")}`);
           return;
         }
-
         if (code) {
           const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
           if (exErr) {
-            router.replace(
-              `/login?error=${encodeURIComponent(exErr.message || "Link inválido o expirado")}`
-            );
+            router.replace(`/login?error=${encodeURIComponent(exErr.message || "Link inválido o expirado")}`);
             return;
           }
         }
-
         const { data } = await supabase.auth.getSession();
         if (data.session) {
           router.replace(next);
