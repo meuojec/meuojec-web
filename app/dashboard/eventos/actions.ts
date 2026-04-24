@@ -79,13 +79,15 @@ export async function crearEvento(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase.from("eventos").insert({
+  const admin = createAdminClient();
+  const { error } = await admin.from("eventos").insert({
     nombre,
     id_evento,
     activo: false,
     fecha_evento,
     hora_evento,
   });
+  if (error) { console.error("[crearEvento]", error.message); return; }
 
   revalidatePath("/dashboard/eventos");
   revalidatePath("/dashboard");
