@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -89,6 +90,5 @@ export async function crearEvento(formData: FormData) {
   revalidatePath("/dashboard/eventos");
   revalidatePath("/dashboard");
 
-  const { redirect } = await import("next/navigation");
   redirect("/dashboard/eventos");
 }
