@@ -49,11 +49,10 @@ function safe(s?: string | null) { return (s ?? "").trim(); }
 
 function formatDate(raw?: string | null) {
   if (!raw) return "";
-  const d = new Date(raw + "T12:00:00");
-  if (isNaN(d.getTime())) return raw;
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `${dd}/${mm}/${d.getFullYear()}`;
+  // Parse YYYY-MM-DD directly to avoid timezone shifts
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return raw;
+  return `${match[3]}/${match[2]}/${match[1]}`;
 }
 
 const s = StyleSheet.create({
