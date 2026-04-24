@@ -250,35 +250,35 @@ const s = StyleSheet.create({
     position: "relative",
   },
   backHeader: {
-    height: 34,
+    height: 28,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
-    gap: 7,
+    gap: 6,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(201,169,78,0.3)",
   },
   backLogoCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(201,169,78,0.5)",
     flexShrink: 0,
   },
-  backLogoImg: { width: 22, height: 22, objectFit: "cover" },
-  backChurchShort: { fontSize: 8, color: WHITE, fontFamily: "Helvetica-Bold", letterSpacing: 1.2 },
-  backChurchFull:  { fontSize: 5, color: "rgba(201,169,78,0.7)", letterSpacing: 0.1, marginTop: 1.5 },
+  backLogoImg: { width: 18, height: 18, objectFit: "cover" },
+  backChurchShort: { fontSize: 7, color: WHITE, fontFamily: "Helvetica-Bold", letterSpacing: 1.0 },
+  backChurchFull:  { fontSize: 4.5, color: "rgba(201,169,78,0.7)", letterSpacing: 0.1, marginTop: 1 },
   backBody: {
     flex: 1,
     flexDirection: "row",
     paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 4,
+    paddingTop: 6,
+    paddingBottom: 3,
     gap: 8,
   },
-  backInfo: { flex: 1, gap: 5 },
+  backInfo: { flex: 1, gap: 3 },
   backFieldWrap: { gap: 1 },
   backFieldLabel: {
     fontSize: 6,
@@ -293,11 +293,11 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "rgba(201,169,78,0.2)",
     borderStyle: "dashed",
-    marginTop: 5,
-    paddingTop: 5,
+    marginTop: 3,
+    paddingTop: 3,
   },
-  foundLabel: { fontSize: 6, color: "rgba(201,169,78,0.6)", fontFamily: "Helvetica-Bold", letterSpacing: 0.4 },
-  foundVal:   { fontSize: 7, color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginTop: 1.5 },
+  foundLabel: { fontSize: 5.5, color: "rgba(201,169,78,0.6)", fontFamily: "Helvetica-Bold", letterSpacing: 0.4 },
+  foundVal:   { fontSize: 6.5, color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginTop: 1 },
   backQrCol:  { width: 54, alignItems: "center", justifyContent: "center", gap: 4 },
   backQrBox:  {
     width: 50,
@@ -440,7 +440,7 @@ export function CarnetBackCard({
           {logoUrl ? (
             <Image style={s.backLogoImg} src={logoUrl} />
           ) : (
-            <View style={{ width: 22, height: 22, backgroundColor: "rgba(201,169,78,0.15)" }} />
+            <View style={{ width: 18, height: 18, backgroundColor: "rgba(201,169,78,0.15)" }} />
           )}
         </View>
         <View>

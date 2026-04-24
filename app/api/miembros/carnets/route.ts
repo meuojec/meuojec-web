@@ -1,5 +1,7 @@
 import React from "react";
 import { NextResponse } from "next/server";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { createClient } from "@/lib/supabase/server";
 import { qrDataUrl } from "@/lib/qr";
 import CarnetsA4Pdf from "@/lib/pdfs/CarnetsA4Pdf";
@@ -12,13 +14,13 @@ function asInt(v: string | null, def: number) {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : def;
 }
 
-async function fetchAsDataUrl(url: string): Promise<string | null> {
+function readPublicAsDataUrl(filePath: string): string | null {
   try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return null;
-    const contentType = res.headers.get("content-type") || "image/png";
-    const buf = Buffer.from(await res.arrayBuffer());
-    return `data:${contentType};base64,${buf.toString("base64")}`;
+    const abs = join(process.cwd(), "public", filePath.replace(/^\//, ""));
+    const buf = readFileSync(abs);
+    const ext = (filePath.split(".").pop() || "png").toLowerCase();
+    const mime = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/png";
+    return `data:${mime};base64,${buf.toString("base64")}`;
   } catch {
     return null;
   }
@@ -41,10 +43,8 @@ export async function GET(req: Request) {
   const logoPath      = process.env.NEXT_PUBLIC_IGLESIA_LOGO_PATH      || "/logo-iglesia.png";
   const watermarkPath = process.env.NEXT_PUBLIC_IGLESIA_WATERMARK_PATH || "/logo-iglesia.png";
 
-  const [logoUrl, watermarkUrl] = await Promise.all([
-    fetchAsDataUrl(`${baseUrl}${logoPath}`),
-    fetchAsDataUrl(`${baseUrl}${watermarkPath}`),
-  ]);
+  const logoUrl      = readPublicAsDataUrl(logoPath);
+  const watermarkUrl = readPublicAsDataUrl(watermarkPath);
 
   let q = supabase
     .from("miembros")

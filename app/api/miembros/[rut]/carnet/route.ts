@@ -1,5 +1,7 @@
 import React from "react";
 import { NextResponse } from "next/server";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { createClient } from "@/lib/supabase/server";
 import { qrDataUrl } from "@/lib/qr";
 import CarnetPdf from "@/lib/pdfs/CarnetPdf";
@@ -15,6 +17,18 @@ function normalizeRut(input: string) {
     s = `${s.slice(0, -1)}-${s.slice(-1)}`;
   }
   return s;
+}
+
+function readPublicAsDataUrl(filePath: string): string | null {
+  try {
+    const abs = join(process.cwd(), "public", filePath.replace(/^\//, ""));
+    const buf = readFileSync(abs);
+    const ext = (filePath.split(".").pop() || "png").toLowerCase();
+    const mime = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/png";
+    return `data:${mime};base64,${buf.toString("base64")}`;
+  } catch {
+    return null;
+  }
 }
 
 async function fetchAsDataUrl(url: string): Promise<string | null> {
@@ -73,10 +87,8 @@ export async function GET(_req: Request, ctx: { params: Params | Promise<Params>
   const logoPath      = process.env.NEXT_PUBLIC_IGLESIA_LOGO_PATH      || "/logo-iglesia.png";
   const watermarkPath = process.env.NEXT_PUBLIC_IGLESIA_WATERMARK_PATH || "/logo-iglesia.png";
 
-  const [logoUrl, watermarkUrl] = await Promise.all([
-    fetchAsDataUrl(`${baseUrl}${logoPath}`),
-    fetchAsDataUrl(`${baseUrl}${watermarkPath}`),
-  ]);
+  const logoUrl      = readPublicAsDataUrl(logoPath);
+  const watermarkUrl = readPublicAsDataUrl(watermarkPath);
 
   const doc = React.createElement(CarnetPdf as any, {
     iglesiaFull,
