@@ -85,9 +85,10 @@ function fmtDayMonthCL(dateStr?: string | null) {
   if (!dateStr) return "—";
   const [yy, mm, dd] = dateStr.split("-").map(Number);
   if (!yy || !mm || !dd) return "—";
-  const d = new Date(yy, mm - 1, dd);
+  // Use Date.UTC + timeZone UTC to avoid server timezone shifting the day
+  const d = new Date(Date.UTC(yy, mm - 1, dd));
   return new Intl.DateTimeFormat("es-CL", {
-    timeZone: CL_TZ,
+    timeZone: "UTC",
     day: "2-digit",
     month: "long",
   }).format(d);
