@@ -97,6 +97,14 @@ export async function getNavPermissions(): Promise<NavPerms> {
         pastoral: false, anuncios: true, agenda: true,
       };
     }
+    if (role === "diacono") {
+      return {
+        dash: true, miembros: true, asist: true, eventos: true,
+        fin: false, inv: false, ded: true, reportes: false, admin: false,
+        ministerios: false, contribuciones: false, visitantes: true,
+        pastoral: false, anuncios: false, agenda: false,
+      };
+    }
     return { ...DENY_ALL, dash: true, anuncios: true, agenda: true };
   }
 }
