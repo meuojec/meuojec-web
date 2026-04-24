@@ -14,7 +14,6 @@ import {
   Package,
   BookOpen,
   Church,
-  HandCoins,
   UserCheck,
   Heart,
   Megaphone,
@@ -32,7 +31,6 @@ type NavPerms = {
   reportes?: boolean;
   admin: boolean;
   ministerios?: boolean;
-  contribuciones?: boolean;
   visitantes?: boolean;
   pastoral?: boolean;
   anuncios?: boolean;
@@ -174,10 +172,9 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
   ];
 
   const pastoral: NavItem[] = [
-    { label: "Visitantes",     href: "/dashboard/visitantes",     icon: UserCheck,  enabled: !!navPerms.visitantes },
-    { label: "Pastoral",       href: "/dashboard/pastoral",       icon: Heart,      enabled: !!navPerms.pastoral },
-    { label: "Ministerios",    href: "/dashboard/ministerios",    icon: Church,     enabled: !!navPerms.ministerios },
-    { label: "Contribuciones", href: "/dashboard/contribuciones", icon: HandCoins,  enabled: !!navPerms.contribuciones },
+    { label: "Visitantes",  href: "/dashboard/visitantes",  icon: UserCheck, enabled: !!navPerms.visitantes },
+    { label: "Pastoral",    href: "/dashboard/pastoral",    icon: Heart,     enabled: !!navPerms.pastoral },
+    { label: "Ministerios", href: "/dashboard/ministerios", icon: Church,    enabled: !!navPerms.ministerios },
   ];
 
   const comunicacion: NavItem[] = [
