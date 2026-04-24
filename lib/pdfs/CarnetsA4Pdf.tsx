@@ -6,7 +6,6 @@ type Miembro = {
   rut: string;
   nombres?: string | null;
   apellidos?: string | null;
-  departamento?: string | null;
   fecha_nacimiento?: string | null;
   fotoUrl?: string | null;
   qrDataUrl: string;
@@ -56,14 +55,14 @@ export default function CarnetsA4Pdf({
 
   return (
     <Document>
-      {pages.map((chunk, pi) => (
+      {pages.map((page, pi) => (
         <Page key={pi} size="A4" style={styles.page}>
           <View style={styles.header}>
             <Text style={styles.title}>{titulo} (A4 · 8 por hoja)</Text>
             <Text style={styles.meta}>Generado: {stamp} · Pagina {pi + 1}/{pages.length}</Text>
           </View>
           <View style={styles.grid}>
-            {chunk.map((m) => (
+            {page.map((m) => (
               <View key={m.rut} style={styles.cell}>
                 <CarnetCard
                   iglesiaFull={iglesiaFull}
@@ -74,7 +73,6 @@ export default function CarnetsA4Pdf({
                     rut: m.rut,
                     nombres: m.nombres,
                     apellidos: m.apellidos,
-                    departamento: m.departamento,
                     fecha_nacimiento: m.fecha_nacimiento,
                   }}
                   fotoUrl={m.fotoUrl ?? null}

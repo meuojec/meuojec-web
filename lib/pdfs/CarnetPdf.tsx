@@ -10,10 +10,10 @@ const WHITE = "#FFFFFF";
 const GRAY  = "#6B7280";
 const DARK  = "#111827";
 
-const HEADER_H  = 38;
-const FOOTER_H  = 22;
+const HEADER_H   = 38;
+const FOOTER_H   = 22;
 const GOLDLINE_H = 2;
-const BODY_H = CARD_H - HEADER_H - FOOTER_H - GOLDLINE_H;
+const BODY_H     = CARD_H - HEADER_H - FOOTER_H - GOLDLINE_H; // 91
 
 export type CarnetProps = {
   iglesiaFull: string;
@@ -24,7 +24,6 @@ export type CarnetProps = {
     rut: string;
     nombres?: string | null;
     apellidos?: string | null;
-    departamento?: string | null;
     fecha_nacimiento?: string | null;
   };
   fotoUrl?: string | null;
@@ -50,19 +49,12 @@ function formatDate(raw?: string | null) {
   if (isNaN(d.getTime())) return raw;
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yy = d.getFullYear();
-  return `${dd}/${mm}/${yy}`;
-}
-
-function firstDept(raw?: string | null) {
-  if (!raw) return "";
-  return raw.split(/[,;]/)[0].trim();
+  return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
 const s = StyleSheet.create({
   page: { padding: 0, backgroundColor: WHITE },
 
-  /* ── CARD WRAPPER ── */
   card: {
     width: CARD_W,
     height: CARD_H,
@@ -75,7 +67,7 @@ const s = StyleSheet.create({
     position: "relative",
   },
 
-  /* ── HEADER ── */
+  /* HEADER */
   header: {
     height: HEADER_H,
     backgroundColor: NAVY,
@@ -84,19 +76,22 @@ const s = StyleSheet.create({
     paddingHorizontal: 10,
     gap: 8,
   },
+  /* FIX 1: logo circulo con imagen que llena el circulo */
   logoCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: GOLD,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
+    overflow: "hidden",
     flexShrink: 0,
+    backgroundColor: "rgba(255,255,255,0.08)",
   },
-  logoImg: { width: 22, height: 22, objectFit: "contain" },
-  logoFallback: { fontSize: 11, color: GOLD, fontFamily: "Helvetica-Bold" },
+  logoImg: {
+    width: 28,
+    height: 28,
+    objectFit: "cover",
+  },
   churchCol: { flex: 1 },
   churchFull: {
     fontSize: 5.8,
@@ -107,27 +102,27 @@ const s = StyleSheet.create({
     textTransform: "uppercase",
   },
   churchShort: {
-    fontSize: 8,
+    fontSize: 8.5,
     color: GOLD,
     fontFamily: "Helvetica-Bold",
-    letterSpacing: 1.6,
+    letterSpacing: 2,
     marginTop: 2,
   },
 
-  /* ── BODY ── */
+  /* BODY */
   body: {
     height: BODY_H,
     flexDirection: "row",
     paddingHorizontal: 10,
-    paddingTop: 6,
-    paddingBottom: 4,
-    gap: 8,
+    paddingTop: 7,
+    paddingBottom: 5,
+    gap: 9,
   },
 
-  /* FOTO */
+  /* FIX 4: foto con dimensiones fijas y overflow hidden para que recorte bien */
   photoWrap: {
-    width: 60,
-    height: 76,
+    width: 58,
+    height: 77,
     borderRadius: 8,
     borderWidth: 1.5,
     borderColor: GOLD,
@@ -135,54 +130,48 @@ const s = StyleSheet.create({
     backgroundColor: "#F1F5F9",
     flexShrink: 0,
   },
-  photo: { width: "100%", height: "100%", objectFit: "cover" },
+  photo: {
+    width: 58,
+    height: 77,
+    objectFit: "cover",
+  },
 
   /* INFO */
-  infoCol: { flex: 1, flexDirection: "column", gap: 2 },
+  infoCol: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    paddingTop: 1,
+  },
+  /* FIX 2: CARNET DE MIEMBRO en una sola linea */
   tagLabel: {
-    fontSize: 6.5,
+    fontSize: 5.8,
     color: GRAY,
     fontFamily: "Helvetica-Bold",
-    letterSpacing: 0.8,
-    marginBottom: 1,
+    letterSpacing: 0.5,
+    marginBottom: 4,
   },
   memberName: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontFamily: "Helvetica-Bold",
     color: DARK,
     lineHeight: 1.2,
   },
-  rolePill: {
-    flexDirection: "row",
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: GOLD,
-    borderRadius: 10,
-    backgroundColor: NAVY,
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
-    marginTop: 3,
-  },
-  rolePillText: {
-    fontSize: 7.5,
-    color: WHITE,
-    fontFamily: "Helvetica-Bold",
-    letterSpacing: 0.2,
-  },
-  fieldsWrap: { marginTop: 5, gap: 2.5 },
-  fieldRow: { flexDirection: "row", gap: 4 },
+  /* FIX 3: sin departamento - solo RUT y fecha nacimiento */
+  fieldsWrap: { marginTop: 8, gap: 4 },
+  fieldRow: { flexDirection: "row", gap: 4, alignItems: "center" },
   fieldLabel: { fontSize: 8, color: GRAY },
-  fieldValue: { fontSize: 8, color: DARK, fontFamily: "Helvetica-Bold" },
+  fieldValue: { fontSize: 8.5, color: DARK, fontFamily: "Helvetica-Bold" },
 
-  /* QR */
+  /* QR grande */
   qrCol: {
-    width: 66,
+    width: 68,
     alignItems: "center",
     justifyContent: "center",
   },
   qrBox: {
-    width: 62,
-    height: 62,
+    width: 65,
+    height: 65,
     borderRadius: 7,
     borderWidth: 1.5,
     borderColor: GOLD,
@@ -190,13 +179,10 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  qrImg: { width: 54, height: 54 },
+  qrImg: { width: 57, height: 57 },
 
   /* GOLD LINE */
-  goldLine: {
-    height: GOLDLINE_H,
-    backgroundColor: GOLD,
-  },
+  goldLine: { height: GOLDLINE_H, backgroundColor: GOLD },
 
   /* FOOTER */
   footer: {
@@ -213,7 +199,7 @@ const s = StyleSheet.create({
     height: 3,
     borderRadius: 1.5,
     backgroundColor: GOLD,
-    marginHorizontal: 4,
+    marginHorizontal: 5,
   },
   footRight: { flexDirection: "row", alignItems: "center" },
 
@@ -227,9 +213,9 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  wm: { width: 120, height: 120, objectFit: "contain", opacity: 0.04 },
+  wm: { width: 110, height: 110, objectFit: "contain", opacity: 0.04 },
 
-  /* ── BACK ── */
+  /* ── REVERSO ── */
   cardBack: {
     width: CARD_W,
     height: CARD_H,
@@ -254,16 +240,14 @@ const s = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(201,169,78,0.5)",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    alignItems: "center",
-    justifyContent: "center",
     flexShrink: 0,
   },
-  backLogoText: { fontSize: 9, color: GOLD, fontFamily: "Helvetica-Bold" },
+  backLogoImg: { width: 22, height: 22, objectFit: "cover" },
   backChurchShort: { fontSize: 8, color: WHITE, fontFamily: "Helvetica-Bold", letterSpacing: 1.2 },
-  backChurchFull: { fontSize: 5, color: "rgba(201,169,78,0.7)", letterSpacing: 0.15, marginTop: 1.5 },
+  backChurchFull:  { fontSize: 5, color: "rgba(201,169,78,0.7)", letterSpacing: 0.1, marginTop: 1.5 },
   backBody: {
     flex: 1,
     flexDirection: "row",
@@ -281,13 +265,19 @@ const s = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: "uppercase",
   },
-  backFieldVal: { fontSize: 8, color: WHITE, fontFamily: "Helvetica-Bold" },
-  backFieldSub: { fontSize: 6.5, color: "rgba(255,255,255,0.45)" },
-  divider: { borderTopWidth: 1, borderTopColor: "rgba(201,169,78,0.2)", borderStyle: "dashed", marginTop: 4, paddingTop: 5 },
+  backFieldVal: { fontSize: 8.5, color: WHITE, fontFamily: "Helvetica-Bold" },
+  backFieldSub:  { fontSize: 6.5, color: "rgba(255,255,255,0.45)" },
+  divider: {
+    borderTopWidth: 1,
+    borderTopColor: "rgba(201,169,78,0.2)",
+    borderStyle: "dashed",
+    marginTop: 5,
+    paddingTop: 5,
+  },
   foundLabel: { fontSize: 6, color: "rgba(201,169,78,0.6)", fontFamily: "Helvetica-Bold", letterSpacing: 0.4 },
-  foundVal: { fontSize: 7, color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginTop: 1.5 },
-  backQrCol: { width: 54, alignItems: "center", justifyContent: "center", gap: 4 },
-  backQrBox: {
+  foundVal:   { fontSize: 7, color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginTop: 1.5 },
+  backQrCol:  { width: 54, alignItems: "center", justifyContent: "center", gap: 4 },
+  backQrBox:  {
     width: 50,
     height: 50,
     borderRadius: 6,
@@ -295,7 +285,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  backQrImg: { width: 42, height: 42 },
+  backQrImg:   { width: 42, height: 42 },
   backQrLabel: { fontSize: 6, color: "rgba(201,169,78,0.6)", textAlign: "center" },
   backGoldLine: { height: 1.5, backgroundColor: "rgba(201,169,78,0.4)" },
   backFooter: {
@@ -305,7 +295,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 10,
   },
-  backFootLeft: { fontSize: 6.5, color: "rgba(255,255,255,0.35)" },
+  backFootLeft:  { fontSize: 6.5, color: "rgba(255,255,255,0.35)" },
   backFootRight: { fontSize: 7, color: GOLD, fontFamily: "Helvetica-Bold" },
 });
 
@@ -321,20 +311,22 @@ export function CarnetCard({
   fotoUrl,
   qrDataUrl,
 }: CarnetProps) {
-  const nombres   = safe(miembro.nombres)   || "—";
+  const nombres   = safe(miembro.nombres)   || "";
   const apellidos = safe(miembro.apellidos) || "";
-  const fullName  = apellidos ? `${nombres} ${apellidos}` : nombres;
-  const dept      = firstDept(miembro.departamento);
+  const fullName  = [nombres, apellidos].filter(Boolean).join(" ") || "—";
   const fnac      = formatDate(miembro.fecha_nacimiento);
 
   return (
     <View style={s.card}>
       {/* Header */}
       <View style={s.header}>
+        {/* FIX 1: logo con imagen real, sin fallback de texto */}
         <View style={s.logoCircle}>
-          {logoUrl
-            ? <Image style={s.logoImg} src={logoUrl} />
-            : <Text style={s.logoFallback}>+</Text>}
+          {logoUrl ? (
+            <Image style={s.logoImg} src={logoUrl} />
+          ) : (
+            <View style={{ width: 28, height: 28, backgroundColor: "rgba(201,169,78,0.15)" }} />
+          )}
         </View>
         <View style={s.churchCol}>
           <Text style={s.churchFull}>{iglesiaFull}</Text>
@@ -351,31 +343,26 @@ export function CarnetCard({
 
       {/* Body */}
       <View style={s.body}>
-        {/* Foto */}
+        {/* FIX 4: foto con dimensiones absolutas */}
         <View style={s.photoWrap}>
-          {fotoUrl ? <Image style={s.photo} src={fotoUrl} /> : null}
+          {fotoUrl ? (
+            <Image style={s.photo} src={fotoUrl} />
+          ) : (
+            <View style={{ width: 58, height: 77, backgroundColor: "#E5E7EB" }} />
+          )}
         </View>
 
         {/* Info */}
         <View style={s.infoCol}>
+          {/* FIX 2: una sola linea */}
           <Text style={s.tagLabel}>CARNET DE MIEMBRO</Text>
           <Text style={s.memberName}>{fullName}</Text>
-          {dept ? (
-            <View style={s.rolePill}>
-              <Text style={s.rolePillText}>{dept}</Text>
-            </View>
-          ) : null}
+          {/* FIX 3: solo RUT y fecha, sin departamento */}
           <View style={s.fieldsWrap}>
             <View style={s.fieldRow}>
               <Text style={s.fieldLabel}>RUT</Text>
               <Text style={s.fieldValue}>{miembro.rut}</Text>
             </View>
-            {miembro.departamento ? (
-              <View style={s.fieldRow}>
-                <Text style={s.fieldLabel}>Depto.</Text>
-                <Text style={s.fieldValue}>{safe(miembro.departamento)}</Text>
-              </View>
-            ) : null}
             {fnac ? (
               <View style={s.fieldRow}>
                 <Text style={s.fieldLabel}>Nacimiento</Text>
@@ -423,12 +410,13 @@ export function CarnetBackCard({
 }: CarnetBackProps) {
   return (
     <View style={s.cardBack}>
-      {/* Header */}
       <View style={s.backHeader}>
         <View style={s.backLogoCircle}>
-          {logoUrl
-            ? <Image style={{ width: 16, height: 16, objectFit: "contain" }} src={logoUrl} />
-            : <Text style={s.backLogoText}>+</Text>}
+          {logoUrl ? (
+            <Image style={s.backLogoImg} src={logoUrl} />
+          ) : (
+            <View style={{ width: 22, height: 22, backgroundColor: "rgba(201,169,78,0.15)" }} />
+          )}
         </View>
         <View>
           <Text style={s.backChurchShort}>{iglesiaShort}</Text>
@@ -436,7 +424,6 @@ export function CarnetBackCard({
         </View>
       </View>
 
-      {/* Body */}
       <View style={s.backBody}>
         <View style={s.backInfo}>
           <View style={s.backFieldWrap}>
@@ -466,12 +453,10 @@ export function CarnetBackCard({
         </View>
       </View>
 
-      {/* Linea dorada */}
       <View style={s.backGoldLine} />
 
-      {/* Footer */}
       <View style={s.backFooter}>
-        <Text style={s.backFootLeft}>Este carnet es de uso personal e intransferible</Text>
+        <Text style={s.backFootLeft}>Uso personal e intransferible</Text>
         <Text style={s.backFootRight}>{rut}</Text>
       </View>
     </View>
@@ -481,9 +466,7 @@ export function CarnetBackCard({
 /* ─────────────────────────────────────────────────── */
 /*  PDF INDIVIDUAL (frente + reverso)                 */
 /* ─────────────────────────────────────────────────── */
-export default function CarnetPdf(props: CarnetProps & {
-  backProps: CarnetBackProps;
-}) {
+export default function CarnetPdf(props: CarnetProps & { backProps: CarnetBackProps }) {
   const { backProps, ...frontProps } = props;
   return (
     <Document>
