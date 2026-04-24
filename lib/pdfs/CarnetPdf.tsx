@@ -74,15 +74,16 @@ const s = StyleSheet.create({
   header: {
     height: HEADER_H,
     backgroundColor: NAVY,
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 10,
-    gap: 8,
+    gap: 3,
   },
   logoCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 1.5,
     borderColor: GOLD,
     overflow: "hidden",
@@ -92,18 +93,19 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   logoImg: {
-    width: 22,
-    height: 22,
+    width: 17,
+    height: 17,
     objectFit: "contain",
   },
   churchCol: { flex: 1 },
   churchFull: {
-    fontSize: 5.4,
+    fontSize: 6.8,
     color: WHITE,
     fontFamily: "Helvetica-Bold",
-    letterSpacing: 0.1,
-    lineHeight: 1.3,
+    letterSpacing: 0.3,
+    lineHeight: 1.2,
     textTransform: "uppercase",
+    textAlign: "center",
   },
   churchShort: {
     fontSize: 8,
@@ -350,13 +352,10 @@ export function CarnetCard({
           {logoUrl ? (
             <Image style={s.logoImg} src={logoUrl} />
           ) : (
-            <View style={{ width: 28, height: 28, backgroundColor: "rgba(201,169,78,0.15)" }} />
+            <View style={{ width: 22, height: 22, backgroundColor: "rgba(201,169,78,0.15)" }} />
           )}
         </View>
-        <View style={s.churchCol}>
-          <Text style={s.churchFull}>{iglesiaFull}</Text>
-          <Text style={s.churchShort}>{iglesiaShort}</Text>
-        </View>
+        <Text style={s.churchFull}>{iglesiaFull}</Text>
       </View>
 
       {/* Watermark */}
