@@ -15,6 +15,10 @@ const FOOTER_H   = 22;
 const GOLDLINE_H = 2;
 const BODY_H     = CARD_H - HEADER_H - FOOTER_H - GOLDLINE_H; // 91
 
+const PHOTO_W = 56;
+const PHOTO_H = 74;
+const PHOTO_R = 7;
+
 export type CarnetProps = {
   iglesiaFull: string;
   iglesiaShort: string;
@@ -76,7 +80,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 10,
     gap: 8,
   },
-  /* FIX 1: logo circulo con imagen que llena el circulo */
   logoCircle: {
     width: 28,
     height: 28,
@@ -94,7 +97,7 @@ const s = StyleSheet.create({
   },
   churchCol: { flex: 1 },
   churchFull: {
-    fontSize: 5.8,
+    fontSize: 5.4,
     color: WHITE,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 0.1,
@@ -102,7 +105,7 @@ const s = StyleSheet.create({
     textTransform: "uppercase",
   },
   churchShort: {
-    fontSize: 8.5,
+    fontSize: 8,
     color: GOLD,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 2,
@@ -113,27 +116,41 @@ const s = StyleSheet.create({
   body: {
     height: BODY_H,
     flexDirection: "row",
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingTop: 7,
     paddingBottom: 5,
-    gap: 9,
+    gap: 8,
   },
 
-  /* FIX 4: foto con dimensiones fijas y overflow hidden para que recorte bien */
-  photoWrap: {
-    width: 58,
-    height: 77,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: GOLD,
-    overflow: "hidden",
-    backgroundColor: "#F1F5F9",
+  /* PHOTO: outer (position:relative, no overflow) wraps inner (overflow:hidden) + overlay */
+  photoOuter: {
+    width: PHOTO_W,
+    height: PHOTO_H,
+    position: "relative",
     flexShrink: 0,
   },
-  photo: {
-    width: 58,
-    height: 77,
+  photoInner: {
+    width: PHOTO_W,
+    height: PHOTO_H,
+    borderRadius: PHOTO_R,
+    overflow: "hidden",
+    backgroundColor: "#E5E7EB",
+  },
+  photoImg: {
+    width: PHOTO_W,
+    height: PHOTO_H,
     objectFit: "cover",
+  },
+  /* Gold border drawn ON TOP of photo to cover corner artifacts */
+  photoBorderOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: PHOTO_W,
+    height: PHOTO_H,
+    borderRadius: PHOTO_R,
+    borderWidth: 1.5,
+    borderColor: GOLD,
   },
 
   /* INFO */
@@ -143,35 +160,41 @@ const s = StyleSheet.create({
     justifyContent: "flex-start",
     paddingTop: 1,
   },
-  /* FIX 2: CARNET DE MIEMBRO en una sola linea */
   tagLabel: {
-    fontSize: 5.8,
+    fontSize: 5.5,
     color: GRAY,
     fontFamily: "Helvetica-Bold",
     letterSpacing: 0.5,
     marginBottom: 4,
   },
-  memberName: {
-    fontSize: 11,
+  /* Nombres y apellidos en lineas separadas */
+  memberNombre: {
+    fontSize: 9.5,
     fontFamily: "Helvetica-Bold",
     color: DARK,
     lineHeight: 1.2,
   },
-  /* FIX 3: sin departamento - solo RUT y fecha nacimiento */
-  fieldsWrap: { marginTop: 8, gap: 4 },
+  memberApellido: {
+    fontSize: 9.5,
+    fontFamily: "Helvetica-Bold",
+    color: DARK,
+    lineHeight: 1.2,
+    marginTop: 1,
+  },
+  fieldsWrap: { marginTop: 7, gap: 3 },
   fieldRow: { flexDirection: "row", gap: 4, alignItems: "center" },
-  fieldLabel: { fontSize: 8, color: GRAY },
-  fieldValue: { fontSize: 8.5, color: DARK, fontFamily: "Helvetica-Bold" },
+  fieldLabel: { fontSize: 7, color: GRAY, minWidth: 44 },
+  fieldValue: { fontSize: 7.5, color: DARK, fontFamily: "Helvetica-Bold" },
 
   /* QR grande */
   qrCol: {
-    width: 68,
+    width: 66,
     alignItems: "center",
     justifyContent: "center",
   },
   qrBox: {
-    width: 65,
-    height: 65,
+    width: 63,
+    height: 63,
     borderRadius: 7,
     borderWidth: 1.5,
     borderColor: GOLD,
@@ -179,7 +202,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  qrImg: { width: 57, height: 57 },
+  qrImg: { width: 55, height: 55 },
 
   /* GOLD LINE */
   goldLine: { height: GOLDLINE_H, backgroundColor: GOLD },
@@ -313,14 +336,12 @@ export function CarnetCard({
 }: CarnetProps) {
   const nombres   = safe(miembro.nombres)   || "";
   const apellidos = safe(miembro.apellidos) || "";
-  const fullName  = [nombres, apellidos].filter(Boolean).join(" ") || "—";
   const fnac      = formatDate(miembro.fecha_nacimiento);
 
   return (
     <View style={s.card}>
       {/* Header */}
       <View style={s.header}>
-        {/* FIX 1: logo con imagen real, sin fallback de texto */}
         <View style={s.logoCircle}>
           {logoUrl ? (
             <Image style={s.logoImg} src={logoUrl} />
@@ -343,21 +364,26 @@ export function CarnetCard({
 
       {/* Body */}
       <View style={s.body}>
-        {/* FIX 4: foto con dimensiones absolutas */}
-        <View style={s.photoWrap}>
-          {fotoUrl ? (
-            <Image style={s.photo} src={fotoUrl} />
-          ) : (
-            <View style={{ width: 58, height: 77, backgroundColor: "#E5E7EB" }} />
-          )}
+        {/* Foto con overlay dorado encima para cubrir esquinas */}
+        <View style={s.photoOuter}>
+          <View style={s.photoInner}>
+            {fotoUrl ? (
+              <Image style={s.photoImg} src={fotoUrl} />
+            ) : (
+              <View style={{ width: PHOTO_W, height: PHOTO_H, backgroundColor: "#E5E7EB" }} />
+            )}
+          </View>
+          {/* Borde dorado encima de la foto */}
+          <View style={s.photoBorderOverlay} />
         </View>
 
         {/* Info */}
         <View style={s.infoCol}>
-          {/* FIX 2: una sola linea */}
           <Text style={s.tagLabel}>CARNET DE MIEMBRO</Text>
-          <Text style={s.memberName}>{fullName}</Text>
-          {/* FIX 3: solo RUT y fecha, sin departamento */}
+          {/* Nombres y apellidos en lineas separadas */}
+          <Text style={s.memberNombre}>{nombres || "—"}</Text>
+          {apellidos ? <Text style={s.memberApellido}>{apellidos}</Text> : null}
+          {/* Campos */}
           <View style={s.fieldsWrap}>
             <View style={s.fieldRow}>
               <Text style={s.fieldLabel}>RUT</Text>
@@ -441,7 +467,7 @@ export function CarnetBackCard({
           </View>
           <View style={s.divider}>
             <Text style={s.foundLabel}>Si encuentra esta tarjeta</Text>
-            <Text style={s.foundVal}>Por favor devuelvala a cualquier{"\n"}responsable de la iglesia. Gracias.</Text>
+            <Text style={s.foundVal}>Por favor devuelvala a cualquier responsable de la iglesia. Gracias.</Text>
           </View>
         </View>
 
