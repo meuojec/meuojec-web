@@ -61,3 +61,34 @@ export async function guardarHorarioAuto(
   revalidatePath(`/dashboard/eventos/${eventoId}/editar`);
   return { ok: true };
 }
+
+/** Crea un nuevo evento */
+export async function crearEvento(formData: FormData) {
+  const nombre      = String(formData.get("nombre")      || "").trim();
+  const id_evento   = String(formData.get("id_evento")   || "").trim();
+  const fechaRaw    = String(formData.get("fecha_evento") || "").trim();
+  const horaRaw     = String(formData.get("hora_evento")  || "").trim();
+
+  if (!nombre || !id_evento) return;
+
+  const fecha_evento = fechaRaw || null;
+  const hora_evento  = horaRaw  || null;
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase.from("eventos").insert({
+    nombre,
+    id_evento,
+    activo: false,
+    fecha_evento,
+    hora_evento,
+  });
+
+  revalidatePath("/dashboard/eventos");
+  revalidatePath("/dashboard");
+
+  const { redirect } = await import("next/navigation");
+  redirect("/dashboard/eventos");
+}

@@ -1,20 +1,13 @@
 // app/dashboard/eventos/nuevo/page.tsx
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-
-function toNull(v: FormDataEntryValue | null) {
-  const s = String(v ?? "").trim();
-  return s ? s : null;
-}
+import { crearEvento } from "../actions";
 
 export default async function NuevoEventoPage() {
   const supabase = await createClient();
 
-  // Traer todos los codigos y quedarse con el maximo numerico
   const { data: todos } = await supabase
     .from("eventos")
     .select("id_evento");
@@ -25,30 +18,6 @@ export default async function NuevoEventoPage() {
   );
   const codigoSiguiente = String(maxNum + 1).padStart(3, "0");
 
-  async function createEvent(formData: FormData) {
-    "use server";
-
-    const nombre     = String(formData.get("nombre")      || "").trim();
-    const id_evento  = String(formData.get("id_evento")   || "").trim();
-    const fecha_evento = toNull(formData.get("fecha_evento"));
-    const hora_evento  = toNull(formData.get("hora_evento"));
-
-    if (!nombre || !id_evento) return;
-
-    const supabase = await createClient();
-    await supabase.from("eventos").insert({
-      nombre,
-      id_evento,
-      activo: false,
-      fecha_evento,
-      hora_evento,
-    });
-
-    revalidatePath("/dashboard/eventos");
-    revalidatePath("/dashboard");
-    redirect("/dashboard/eventos");
-  }
-
   return (
     <div className="space-y-6 max-w-xl">
       <div>
@@ -58,8 +27,8 @@ export default async function NuevoEventoPage() {
         </p>
       </div>
 
-      <form action={createEvent} className="space-y-5">
-        {/* Hidden input que realmente se envia */}
+      <form action={crearEvento} className="space-y-5">
+        {/* Codigo asignado automaticamente */}
         <input type="hidden" name="id_evento" value={codigoSiguiente} />
 
         <div className="space-y-2">
@@ -67,7 +36,6 @@ export default async function NuevoEventoPage() {
             Codigo del evento{" "}
             <span className="text-white/30">(asignado automaticamente)</span>
           </label>
-          {/* Solo visual, no se envia */}
           <div className="w-full rounded-xl border border-white/10 bg-black/10 px-4 py-2 text-sm text-white/50 select-none">
             {codigoSiguiente}
           </div>
