@@ -74,7 +74,6 @@ export async function adminUpdateEmail(userId: string, newEmail: string) {
   if (!email) return { ok: false as const, error: "El email es obligatorio." };
   const { error } = await admin.auth.admin.updateUserById(userId, { email });
   if (error) return { ok: false as const, error: error.message };
-  // Actualizar también en profiles
   await admin.from("profiles").update({ email }).eq("id", userId);
   revalidatePath("/dashboard/admin/usuarios");
   return { ok: true as const };
@@ -89,7 +88,7 @@ export async function adminDeleteUser(userId: string) {
   return { ok: true as const };
 }
 
-// 7) Update módulos visibles (profiles.perms)
+// 7) Update modulos visibles (profiles.perms)
 export async function adminUpdatePerms(userId: string, perms: Record<string, boolean>) {
   const supabase = await createClient();
   const { error } = await supabase.from("profiles").update({ perms }).eq("id", userId);
@@ -98,7 +97,7 @@ export async function adminUpdatePerms(userId: string, perms: Record<string, boo
   return { ok: true as const };
 }
 
-// helper: generar contraseña temporal
+// helper: generar contrasena temporal
 function genTempPassword(len = 10) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@$%";
   let out = "";
@@ -146,6 +145,12 @@ export async function adminCreateUser(params: {
         ded: false,
         reportes: false,
         admin: false,
+        ministerios: false,
+        contribuciones: false,
+        visitantes: false,
+        pastoral: false,
+        anuncios: false,
+        agenda: false,
       },
     })
     .eq("id", userId);

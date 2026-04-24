@@ -5,9 +5,9 @@ export const revalidate = 0;
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import UserRolesTable from "../_components/UserRolesTable"; // ✅ IMPORT CORRECTO
+import UserRolesTable from "../_components/UserRolesTable";
 import { getRoles, getUsersWithRoles } from "../actions";
-import { IdCard, Printer, Users, ArrowRight } from "lucide-react";
+import { IdCard, Printer, Users, BookOpen, ArrowRight } from "lucide-react";
 
 function ToolCard({
   title,
@@ -83,9 +83,9 @@ export default async function AdminUsuariosPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Administración · Usuarios</h1>
+        <h1 className="text-2xl font-bold">Administracion &middot; Usuarios</h1>
         <p className="text-white/60">
-          Crea usuarios, edita nombre/estado, asigna roles y cambia contraseñas (sin emails).
+          Crea usuarios, edita nombre/estado, asigna roles y cambia contrasenas (sin emails).
         </p>
       </div>
 
@@ -99,23 +99,30 @@ export default async function AdminUsuariosPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <ToolCard
             title="Carnets (Admin)"
-            desc="Carnet individual por RUT + acceso directo a impresión masiva."
+            desc="Carnet individual por RUT + acceso directo a impresion masiva."
             href="/dashboard/admin/carnets"
             icon={<IdCard className="h-6 w-6 text-emerald-200" />}
           />
 
           <ToolCard
             title="Imprimir carnets (A4)"
-            desc="PDF con 8 carnets por hoja, filtros por DED y opción solo con foto."
+            desc="PDF con 8 carnets por hoja, filtros por DED y opcion solo con foto."
             href="/dashboard/miembros/imprimir-carnets"
             icon={<Printer className="h-6 w-6 text-sky-200" />}
           />
 
           <ToolCard
-            title="Gestión de miembros"
-            desc="Ir al listado de miembros para edición / revisión de datos."
+            title="Gestion de miembros"
+            desc="Ir al listado de miembros para edicion y revision de datos."
             href="/dashboard/miembros"
             icon={<Users className="h-6 w-6 text-violet-200" />}
+          />
+
+          <ToolCard
+            title="Manual de usuario"
+            desc="Documentacion del sistema: secciones, modulos y tabla de roles."
+            href="/dashboard/admin/manual"
+            icon={<BookOpen className="h-6 w-6 text-amber-200" />}
           />
         </div>
       </div>
