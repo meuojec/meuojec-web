@@ -26,36 +26,29 @@ async function fetchAsDataUrl(url: string): Promise<string | null> {
 
 export async function GET(req: Request) {
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const ded = (searchParams.get("ded") || "").trim();
-  const limit = asInt(searchParams.get("limit"), 200);
-  const onlyWithPhoto = (searchParams.get("foto") || "") === "1";
+  const ded           = (searchParams.get("ded") || "").trim();
+  const limit         = asInt(searchParams.get("limit"), 200);
+  const onlyWithPhoto = searchParams.get("foto") === "1";
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "http://localhost:3000";
 
-  // Branding (UNA vez)
-  const iglesiaNombre =
-    process.env.NEXT_PUBLIC_IGLESIA_NOMBRE ||
-    "MISIÓN DE LA IGLESIA UNIVERSAL DE JESUCRISTO";
-
-  const logoPath = process.env.NEXT_PUBLIC_IGLESIA_LOGO_PATH || "/logo-iglesia.png";
+  const iglesiaFull  = process.env.NEXT_PUBLIC_IGLESIA_NOMBRE || "MISION DE LA IGLESIA UNIVERSAL ORGANIZADA DE JESUCRISTO";
+  const iglesiaShort = process.env.NEXT_PUBLIC_IGLESIA_SHORT  || "MEUOJEC";
+  const logoPath      = process.env.NEXT_PUBLIC_IGLESIA_LOGO_PATH      || "/logo-iglesia.png";
   const watermarkPath = process.env.NEXT_PUBLIC_IGLESIA_WATERMARK_PATH || "/logo-iglesia.png";
 
-  const logoUrl = await fetchAsDataUrl(`${baseUrl}${logoPath}`);
-  const watermarkUrl = await fetchAsDataUrl(`${baseUrl}${watermarkPath}`);
+  const [logoUrl, watermarkUrl] = await Promise.all([
+    fetchAsDataUrl(`${baseUrl}${logoPath}`),
+    fetchAsDataUrl(`${baseUrl}${watermarkPath}`),
+  ]);
 
-  // Query miembros
   let q = supabase
     .from("miembros")
-    .select("rut,nombres,apellidos,foto_url,foto_path,created_at,ded")
+    .select("rut,nombres,apellidos,foto_url,foto_path,fecha_nacimiento,departamento,ded")
     .order("created_at", { ascending: false })
     .limit(Math.min(limit, 500));
 
@@ -68,43 +61,36 @@ export async function GET(req: Request) {
 
   const miembros = await Promise.all(
     rows
-      .filter((m: any) => {
-        if (!onlyWithPhoto) return true;
-        return Boolean(m.foto_url || m.foto_path);
-      })
+      .filter((m: any) => onlyWithPhoto ? Boolean(m.foto_url || m.foto_path) : true)
       .map(async (m: any) => {
-        // Foto
         let fotoUrl: string | null = m.foto_url ?? null;
         if (!fotoUrl && m.foto_path) {
           const { data } = supabase.storage.from("fotos-identidad").getPublicUrl(m.foto_path);
           fotoUrl = data.publicUrl ?? null;
         }
-
-        // QR
-        const qrText = `${baseUrl}/verificar/miembro/${encodeURIComponent(m.rut)}`;
-        const qr = await qrDataUrl(qrText);
-
+        const qr = await qrDataUrl(`${baseUrl}/verificar/miembro/${encodeURIComponent(m.rut)}`);
         return {
           rut: m.rut,
           nombres: m.nombres,
           apellidos: m.apellidos,
+          departamento: m.departamento,
+          fecha_nacimiento: m.fecha_nacimiento,
           fotoUrl,
           qrDataUrl: qr,
         };
       })
   );
 
-  // ✅ SIN JSX
   const doc = React.createElement(CarnetsA4Pdf as any, {
     titulo: "Carnets de miembros",
-    iglesiaNombre,
+    iglesiaFull,
+    iglesiaShort,
     logoUrl,
     watermarkUrl,
     miembros,
   });
 
   const buf = await (pdf as any)(doc).toBuffer();
-
   const filename = ded ? `carnets-${ded}.pdf` : `carnets.pdf`;
 
   return new NextResponse(buf as unknown as BodyInit, {

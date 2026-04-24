@@ -12,9 +12,7 @@ function normalizeRut(input: string) {
   s = s.replace(/\s+/g, "").replace(/\./g, "");
   s = s.replace(/[^0-9K-]/g, "");
   if (!s.includes("-") && s.length >= 2) {
-    const num = s.slice(0, -1);
-    const dv = s.slice(-1);
-    s = `${num}-${dv}`;
+    s = `${s.slice(0, -1)}-${s.slice(-1)}`;
   }
   return s;
 }
@@ -35,37 +33,21 @@ type Params = { rut?: string };
 
 export async function GET(_req: Request, ctx: { params: Params | Promise<Params> }) {
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No auth" }, { status: 401 });
 
   const p = (await ctx.params) as Params;
-  const rutRaw = p?.rut ?? "";
-  const rut = normalizeRut(rutRaw);
-
-  if (!rut) {
-    return NextResponse.json({ error: "RUT vacío", rutRaw, params: p }, { status: 400 });
-  }
+  const rut = normalizeRut(p?.rut ?? "");
+  if (!rut) return NextResponse.json({ error: "RUT vacio" }, { status: 400 });
 
   const { data: miembro, error } = await supabase
     .from("miembros")
-    .select("rut,nombres,apellidos,foto_path,foto_url")
+    .select("rut,nombres,apellidos,foto_path,foto_url,fecha_nacimiento,departamento")
     .eq("rut", rut)
     .maybeSingle();
 
-  if (error) {
-    return NextResponse.json(
-      { error: "DB error", detail: error.message, rut_buscado: rut },
-      { status: 500 }
-    );
-  }
-
-  if (!miembro) {
-    return NextResponse.json({ error: "Miembro no encontrado", rut_buscado: rut }, { status: 404 });
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!miembro) return NextResponse.json({ error: "Miembro no encontrado" }, { status: 404 });
 
   // Foto
   let fotoUrl: string | null = miembro.foto_url ?? null;
@@ -74,37 +56,52 @@ export async function GET(_req: Request, ctx: { params: Params | Promise<Params>
     fotoUrl = data.publicUrl ?? null;
   }
 
-  // Base URL (para QR + para tomar logo desde /public)
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "http://localhost:3000";
 
-  // QR
-  const qrText = `${baseUrl}/verificar/miembro/${encodeURIComponent(miembro.rut)}`;
-  const qr = await qrDataUrl(qrText);
+  // QR frente: URL de verificacion del miembro (para escaneo de asistencia)
+  const qrFront = await qrDataUrl(
+    `${baseUrl}/verificar/miembro/${encodeURIComponent(miembro.rut)}`
+  );
 
-  // Branding
-  const iglesiaNombre =
-    process.env.NEXT_PUBLIC_IGLESIA_NOMBRE ||
-    "MISIÓN DE LA IGLESIA UNIVERSAL DE JESUCRISTO";
+  // QR reverso: sitio web publico
+  const qrBack = await qrDataUrl("https://www.meuojec.org");
 
-  const logoPath = process.env.NEXT_PUBLIC_IGLESIA_LOGO_PATH || "/logo-iglesia.png";
+  const iglesiaFull = process.env.NEXT_PUBLIC_IGLESIA_NOMBRE ||
+    "MISION DE LA IGLESIA UNIVERSAL ORGANIZADA DE JESUCRISTO";
+  const iglesiaShort = process.env.NEXT_PUBLIC_IGLESIA_SHORT || "MEUOJEC";
+
+  const logoPath      = process.env.NEXT_PUBLIC_IGLESIA_LOGO_PATH      || "/logo-iglesia.png";
   const watermarkPath = process.env.NEXT_PUBLIC_IGLESIA_WATERMARK_PATH || "/logo-iglesia.png";
 
-  const logoUrl = await fetchAsDataUrl(`${baseUrl}${logoPath}`);
-  const watermarkUrl = await fetchAsDataUrl(`${baseUrl}${watermarkPath}`);
+  const [logoUrl, watermarkUrl] = await Promise.all([
+    fetchAsDataUrl(`${baseUrl}${logoPath}`),
+    fetchAsDataUrl(`${baseUrl}${watermarkPath}`),
+  ]);
 
-  // ✅ SIN JSX (evita errores parsing)
   const doc = React.createElement(CarnetPdf as any, {
-    iglesiaNombre,
+    iglesiaFull,
+    iglesiaShort,
     logoUrl,
     watermarkUrl,
     miembro: {
       rut: miembro.rut,
       nombres: miembro.nombres,
       apellidos: miembro.apellidos,
+      departamento: miembro.departamento,
+      fecha_nacimiento: miembro.fecha_nacimiento,
     },
     fotoUrl,
-    qrDataUrl: qr,
+    qrDataUrl: qrFront,
+    backProps: {
+      iglesiaFull,
+      iglesiaShort,
+      logoUrl,
+      direccion: "Americo Vespucio 1356, Quilicura",
+      telefono: "+56 9 3603 6989",
+      web: "www.meuojec.org",
+      qrWebDataUrl: qrBack,
+      rut: miembro.rut,
+    },
   });
 
   const buf = await (pdf as any)(doc).toBuffer();
