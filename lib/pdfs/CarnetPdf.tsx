@@ -74,11 +74,10 @@ const s = StyleSheet.create({
   header: {
     height: HEADER_H,
     backgroundColor: NAVY,
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     paddingHorizontal: 10,
-    gap: 3,
+    gap: 8,
   },
   logoCircle: {
     width: 22,
@@ -106,6 +105,7 @@ const s = StyleSheet.create({
     lineHeight: 1.2,
     textTransform: "uppercase",
     textAlign: "center",
+    flex: 1,
   },
   churchShort: {
     fontSize: 8,
@@ -470,7 +470,8 @@ export function CarnetBackCard({
           </View>
           <View style={s.divider}>
             <Text style={s.foundLabel}>Si encuentra esta tarjeta</Text>
-            <Text style={s.foundVal}>Por favor devuelvala a cualquier responsable de la iglesia. Gracias.</Text>
+            <Text style={s.foundVal}>Por favor devuelvala a cualquier responsable</Text>
+            <Text style={s.foundVal}>de la iglesia. Gracias.</Text>
           </View>
         </View>
 
