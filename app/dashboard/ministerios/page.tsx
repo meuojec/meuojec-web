@@ -96,9 +96,9 @@ export default async function MinisteriosPage() {
 
       {/* ── DEPARTAMENTO DED ── */}
       <section>
-        <h2 className="text-lg font-semibold text-white mb-1">Departamento DED</h2>
+        <h2 className="text-lg font-semibold text-white mb-1">Departamento Escuela Dominical</h2>
         <p className="text-sm text-white/40 mb-4">
-          Agrupacion por Division / Extension / Departamento. Haz clic para ver sus integrantes.
+          Agrupacion por grupo de Escuela Dominical. Haz clic para ver sus integrantes.
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {DED_OPTIONS.map((ded, i) => {
