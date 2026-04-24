@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import type { AdminRole, AdminUserRow } from "../actions";
 import {
   adminCreateUser,
+  adminDeleteUser,
   adminSetPassword,
+  adminUpdateEmail,
   adminUpdateProfile,
   setUserRoles,
 } from "../actions";
@@ -75,6 +77,7 @@ export default function UserRolesTable({
   const [openProfile, setOpenProfile] = useState(false);
   const [openPassword, setOpenPassword] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
 
   const [selected, setSelected] = useState<AdminUserRow | null>(null);
 
@@ -82,11 +85,12 @@ export default function UserRolesTable({
   const [msg, setMsg] = useState<string>("");
   const [err, setErr] = useState<string>("");
 
-  // ✅ Roles editor ahora guarda KEYS (no IDs)
+  // Roles editor
   const [rolePick, setRolePick] = useState<string[]>([]);
 
   // Profile editor
   const [displayName, setDisplayName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
   const [isActive, setIsActive] = useState(true);
 
   // Password editor
@@ -100,39 +104,37 @@ export default function UserRolesTable({
   const [cPassword, setCPassword] = useState("");
 
   function openManageRoles(u: AdminUserRow) {
-    setErr("");
-    setMsg("");
+    setErr(""); setMsg("");
     setSelected(u);
-    // ✅ usamos u.roles (ya se muestra en la tabla). Asumimos que son KEYS.
     setRolePick(u.roles ?? []);
     setOpenRoles(true);
   }
 
   function openEditProfile(u: AdminUserRow) {
-    setErr("");
-    setMsg("");
+    setErr(""); setMsg("");
     setSelected(u);
     setDisplayName(u.display_name ?? "");
+    setEditEmail(u.email ?? "");
     setIsActive(!!u.is_active);
     setOpenProfile(true);
   }
 
   function openChangePass(u: AdminUserRow) {
-    setErr("");
-    setMsg("");
+    setErr(""); setMsg("");
     setSelected(u);
     setNewPass("");
     setOpenPassword(true);
   }
 
+  function openConfirmDelete(u: AdminUserRow) {
+    setErr(""); setMsg("");
+    setSelected(u);
+    setOpenDelete(true);
+  }
+
   function openCreateUser() {
-    setErr("");
-    setMsg("");
-    setCEmail("");
-    setCName("");
-    setCActive(true);
-    setCRoleKeys([]);
-    setCPassword("");
+    setErr(""); setMsg("");
+    setCEmail(""); setCName(""); setCActive(true); setCRoleKeys([]); setCPassword("");
     setOpenCreate(true);
   }
 
@@ -162,7 +164,9 @@ export default function UserRolesTable({
         <div
           className={[
             "mb-4 rounded-xl border p-3 text-sm",
-            err ? "border-red-500/30 bg-red-500/10 text-red-200" : "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
+            err
+              ? "border-red-500/30 bg-red-500/10 text-red-200"
+              : "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
           ].join(" ")}
         >
           {err || msg}
@@ -170,7 +174,7 @@ export default function UserRolesTable({
       )}
 
       <div className="overflow-auto rounded-xl border border-white/10">
-        <table className="min-w-[900px] w-full text-left text-sm">
+        <table className="min-w-[1000px] w-full text-left text-sm">
           <thead className="bg-white/5 text-white/70">
             <tr>
               <th className="px-4 py-3">Nombre</th>
@@ -194,7 +198,9 @@ export default function UserRolesTable({
                 <td className="px-4 py-3">{u.is_active ? chip("Sí") : chip("No")}</td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-2">
-                    {(u.roles ?? []).length ? u.roles!.map((r) => <span key={r}>{chip(r)}</span>) : chip("sin roles")}
+                    {(u.roles ?? []).length
+                      ? u.roles!.map((r) => <span key={r}>{chip(r)}</span>)
+                      : chip("sin roles")}
                   </div>
                 </td>
                 <td className="px-4 py-3">
@@ -220,7 +226,15 @@ export default function UserRolesTable({
                       onClick={() => openChangePass(u)}
                       className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:bg-amber-500/20 disabled:opacity-60"
                     >
-                      Cambiar clave
+                      Clave
+                    </button>
+
+                    <button
+                      disabled={isPending}
+                      onClick={() => openConfirmDelete(u)}
+                      className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300 hover:bg-red-500/20 disabled:opacity-60"
+                    >
+                      Eliminar
                     </button>
                   </div>
                 </td>
@@ -246,14 +260,13 @@ export default function UserRolesTable({
       >
         <div className="space-y-3">
           <div className="text-sm text-white/60">
-            Selecciona roles para el usuario. (Se aplican por RLS en la BD)
+            Selecciona los roles del usuario. (Se aplican por RLS en la BD)
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {roles.map((r) => {
-              const rk = r.key ?? ""; // key es obligatorio en tu BD ya
+              const rk = r.key ?? "";
               const checked = rk ? rolePick.includes(rk) : false;
-
               return (
                 <label
                   key={r.id}
@@ -291,15 +304,11 @@ export default function UserRolesTable({
               disabled={isPending || !selected}
               onClick={() => {
                 if (!selected) return;
-                setErr("");
-                setMsg("");
+                setErr(""); setMsg("");
                 startTransition(async () => {
-                  const res = await setUserRoles(selected.id, rolePick); // ✅ keys
+                  const res = await setUserRoles(selected.id, rolePick);
                   if (!res.ok) setErr(res.error);
-                  else {
-                    setMsg("Roles actualizados.");
-                    router.refresh(); // ✅ refresca la tabla desde el Server Component
-                  }
+                  else { setMsg("Roles actualizados."); router.refresh(); }
                   setOpenRoles(false);
                 });
               }}
@@ -311,7 +320,7 @@ export default function UserRolesTable({
         </div>
       </Modal>
 
-      {/* MODAL: Editar perfil */}
+      {/* MODAL: Editar perfil (+ email) */}
       <Modal
         open={openProfile}
         title={`Editar usuario · ${selected?.email ?? selected?.id ?? ""}`}
@@ -325,6 +334,17 @@ export default function UserRolesTable({
               onChange={(e) => setDisplayName(e.target.value)}
               className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-white/20"
               placeholder="Ej: Jerry Sainteron"
+            />
+          </label>
+
+          <label className="block">
+            <div className="mb-1 text-xs text-white/60">Email</div>
+            <input
+              type="email"
+              value={editEmail}
+              onChange={(e) => setEditEmail(e.target.value)}
+              className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-white/20"
+              placeholder="correo@ejemplo.com"
             />
           </label>
 
@@ -349,15 +369,20 @@ export default function UserRolesTable({
               disabled={isPending || !selected}
               onClick={() => {
                 if (!selected) return;
-                setErr("");
-                setMsg("");
+                setErr(""); setMsg("");
                 startTransition(async () => {
-                  const res = await adminUpdateProfile(selected.id, displayName, isActive);
-                  if (!res.ok) setErr(res.error);
-                  else {
-                    setMsg("Perfil actualizado.");
-                    router.refresh();
+                  // Actualizar perfil
+                  const profRes = await adminUpdateProfile(selected.id, displayName, isActive);
+                  if (!profRes.ok) { setErr(profRes.error); return; }
+
+                  // Actualizar email si cambio
+                  if (editEmail.trim().toLowerCase() !== (selected.email ?? "").toLowerCase()) {
+                    const emailRes = await adminUpdateEmail(selected.id, editEmail);
+                    if (!emailRes.ok) { setErr(emailRes.error); return; }
                   }
+
+                  setMsg("Usuario actualizado.");
+                  router.refresh();
                   setOpenProfile(false);
                 });
               }}
@@ -369,21 +394,21 @@ export default function UserRolesTable({
         </div>
       </Modal>
 
-      {/* MODAL: Cambiar contraseña */}
+      {/* MODAL: Cambiar contrasena */}
       <Modal
         open={openPassword}
-        title={`Cambiar contraseña · ${selected?.email ?? selected?.id ?? ""}`}
+        title={`Cambiar contrasena · ${selected?.email ?? selected?.id ?? ""}`}
         onClose={() => setOpenPassword(false)}
       >
         <div className="space-y-3">
           <label className="block">
-            <div className="mb-1 text-xs text-white/60">Nueva contraseña</div>
+            <div className="mb-1 text-xs text-white/60">Nueva contrasena</div>
             <input
               type="password"
               value={newPass}
               onChange={(e) => setNewPass(e.target.value)}
               className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-white/20"
-              placeholder="mínimo 6 caracteres"
+              placeholder="minimo 6 caracteres"
             />
           </label>
 
@@ -399,25 +424,71 @@ export default function UserRolesTable({
               disabled={isPending || !selected}
               onClick={() => {
                 if (!selected) return;
-                setErr("");
-                setMsg("");
+                setErr(""); setMsg("");
                 startTransition(async () => {
                   const res = await adminSetPassword(selected.id, newPass);
                   if (!res.ok) setErr(res.error);
-                  else setMsg("Contraseña actualizada.");
+                  else setMsg("Contrasena actualizada.");
                   setOpenPassword(false);
                 });
               }}
               className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 hover:bg-amber-500/20 disabled:opacity-60"
             >
-              Guardar contraseña
+              Guardar contrasena
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* MODAL: Confirmar eliminacion */}
+      <Modal
+        open={openDelete}
+        title="Eliminar usuario"
+        onClose={() => setOpenDelete(false)}
+      >
+        <div className="space-y-4">
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+            Esta accion es <strong>irreversible</strong>. Se eliminara el usuario de Supabase Auth
+            y perdera acceso al sistema de forma permanente.
+          </div>
+
+          <div className="text-sm text-white/70">
+            <span className="font-semibold text-white">{selected?.display_name || selected?.email}</span>
+            {selected?.email && selected?.display_name && (
+              <span className="ml-1 text-white/40">({selected.email})</span>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              onClick={() => setOpenDelete(false)}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
+            >
+              Cancelar
+            </button>
+
+            <button
+              disabled={isPending || !selected}
+              onClick={() => {
+                if (!selected) return;
+                setErr(""); setMsg("");
+                startTransition(async () => {
+                  const res = await adminDeleteUser(selected.id);
+                  if (!res.ok) setErr(res.error);
+                  else { setMsg("Usuario eliminado correctamente."); router.refresh(); }
+                  setOpenDelete(false);
+                });
+              }}
+              className="rounded-xl border border-red-500/40 bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-200 hover:bg-red-500/30 disabled:opacity-60"
+            >
+              Sí, eliminar
             </button>
           </div>
         </div>
       </Modal>
 
       {/* MODAL: Crear usuario */}
-      <Modal open={openCreate} title="Crear usuario (sin email)" onClose={() => setOpenCreate(false)}>
+      <Modal open={openCreate} title="Crear usuario" onClose={() => setOpenCreate(false)}>
         <div className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <label className="block">
@@ -447,13 +518,13 @@ export default function UserRolesTable({
           </label>
 
           <label className="block">
-            <div className="mb-1 text-xs text-white/60">Contraseña (opcional)</div>
+            <div className="mb-1 text-xs text-white/60">Contrasena (opcional)</div>
             <input
               type="password"
               value={cPassword}
               onChange={(e) => setCPassword(e.target.value)}
               className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm outline-none focus:border-white/20"
-              placeholder="Si lo dejas vacío se genera una temporal"
+              placeholder="Si lo dejas vacio se genera una temporal"
             />
           </label>
 
@@ -498,26 +569,21 @@ export default function UserRolesTable({
             <button
               disabled={isPending}
               onClick={() => {
-                setErr("");
-                setMsg("");
+                setErr(""); setMsg("");
                 startTransition(async () => {
-                  // ⚠️ adminCreateUser en actions.ts deberá aceptar roleKeys o convertirlas
                   const res = await adminCreateUser({
                     email: cEmail,
                     displayName: cName,
                     isActive: cActive,
-                    roleKeys: cRoleKeys, // ✅ cambiamos a keys
+                    roleKeys: cRoleKeys,
                     password: cPassword || undefined,
                   } as any);
 
-                  if (!res.ok) {
-                    setErr(res.error);
-                    return;
-                  }
+                  if (!res.ok) { setErr(res.error); return; }
 
                   setMsg(
                     res.tempPassword
-                      ? `Usuario creado. Contraseña inicial: ${res.tempPassword}`
+                      ? `Usuario creado. Contrasena inicial: ${res.tempPassword}`
                       : "Usuario creado."
                   );
                   router.refresh();
