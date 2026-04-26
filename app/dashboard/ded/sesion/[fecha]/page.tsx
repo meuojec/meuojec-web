@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DedSesionClient from "../DedSesionClient";
+import BackButton from "@/app/components/BackButton";
 
 type DedClase = { id: string; nombre: string };
 

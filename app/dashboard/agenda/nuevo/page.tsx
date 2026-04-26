@@ -3,12 +3,16 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import { crearActividadAgenda } from "../actions";
+import BackButton from "@/app/components/BackButton";
 
 export default function NuevaActividadPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Agregar actividad</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Agregar actividad</h1>
+        </div>
         <p className="mt-2 text-white/60">Programa un nuevo evento o actividad para la iglesia.</p>
       </div>
 

@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAsistenciaPerms } from "@/app/lib/auth/perm";
+import BackButton from "@/app/components/BackButton";
 
 function todayISO_CL() {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Santiago" }).format(new Date());

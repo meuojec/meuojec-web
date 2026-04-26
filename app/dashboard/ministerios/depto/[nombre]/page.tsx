@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import BackButton from "@/app/components/BackButton";
 
 type Props = { params: Promise<{ nombre: string }> };
 
@@ -45,7 +46,10 @@ export default async function DeptoDetallePage({ params }: Props) {
           >
             ← Ministerios y Departamentos
           </Link>
-          <h1 className="text-3xl font-bold mt-1">{nombreDecoded}</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-3xl font-bold mt-1">{nombreDecoded}</h1>
+          </div>
           <p className="text-white/50 mt-1">
             {miembros.length} {miembros.length === 1 ? "miembro" : "miembros"} en este departamento
           </p>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { toggleAnuncio, eliminarAnuncio } from "./actions";
+import BackButton from "@/app/components/BackButton";
 
 const TIPO_STYLE: Record<string, string> = {
   urgente: "border-red-500/30 bg-red-500/10 text-red-200",
@@ -32,7 +33,10 @@ export default async function AnunciosPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Anuncios</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-3xl font-bold">Anuncios</h1>
+          </div>
           <p className="mt-2 text-white/60">Comunicaciones internas para el equipo y la congregación.</p>
         </div>
         <Link

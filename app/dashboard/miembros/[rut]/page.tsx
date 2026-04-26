@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import MemberForm, { type MemberRow } from "@/app/components/MemberForm";
+import BackButton from "@/app/components/BackButton";
 
 type PageProps = {
   params: Promise<{ rut: string }>;

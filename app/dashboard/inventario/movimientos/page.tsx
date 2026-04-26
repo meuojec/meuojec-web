@@ -4,6 +4,7 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import BackButton from "@/app/components/BackButton";
 
 function fmtDateTime(iso?: string | null) {
   if (!iso) return "—";
@@ -55,7 +56,10 @@ export default async function MovimientosPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Movimientos</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-2xl font-semibold">Movimientos</h1>
+          </div>
           <p className="mt-1 text-white/60">Entradas, salidas, ajustes y traslados.</p>
         </div>
 

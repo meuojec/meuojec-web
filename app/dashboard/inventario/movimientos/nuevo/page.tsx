@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createMovimiento } from "./actions";
 import ProductPicker from "./ProductPicker";
+import BackButton from "@/app/components/BackButton";
 
 export default async function NuevoMovimientoPage() {
   const supabase = await createClient();
@@ -25,7 +26,10 @@ export default async function NuevoMovimientoPage() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Nuevo movimiento</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-2xl font-semibold">Nuevo movimiento</h1>
+          </div>
           <p className="mt-1 text-white/60">
             Registra <b>entrada</b>, <b>salida</b>, <b>ajuste</b> o <b>traslado</b>.
             Puedes seleccionar producto desde lista o escanear <b>SKU/Barcode</b>.

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { validateManualPin } from "./actions";
+import BackButton from "@/app/components/BackButton";
 
 type Html5QrcodeType = any;
 

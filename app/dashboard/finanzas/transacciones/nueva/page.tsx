@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import TransaccionForm from "../_components/TransaccionForm";
+import BackButton from "@/app/components/BackButton";
 
 export default async function NuevaTransaccionPage() {
   const supabase = await createClient();
@@ -32,7 +33,10 @@ export default async function NuevaTransaccionPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">Nueva transacción</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-xl font-semibold text-white">Nueva transacción</h1>
+        </div>
         <p className="text-sm text-white/60">Área fija: IGLESIA.</p>
       </div>
 

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import CuentaForm from "../../_components/CuentaForm";
 import { getCuentaIGLESIA } from "../../actions";
+import BackButton from "@/app/components/BackButton";
 
 export default async function EditarCuentaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -37,7 +38,10 @@ export default async function EditarCuentaPage({ params }: { params: Promise<{ i
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">Editar cuenta (IGLESIA)</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-xl font-semibold text-white">Editar cuenta (IGLESIA)</h1>
+        </div>
         <p className="text-sm text-white/60">Edita nombre/tipo/moneda. El estado “Activa” lo puedes cambiar en el listado.</p>
       </div>
 

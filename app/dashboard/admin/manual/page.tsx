@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   ShieldCheck,
 } from "lucide-react";
+import BackButton from "@/app/components/BackButton";
 
 type SectionItem = {
   label: string;
@@ -251,7 +252,13 @@ export default function ManualPage() {
           Volver a Administracion
         </Link>
 
-        <h1 className="mt-4 text-3xl font-bold text-white">Manual de usuario</h1>
+        <div className="flex items-center gap-3">
+
+          <BackButton />
+
+          <h1 className="mt-4 text-3xl font-bold text-white">Manual de usuario</h1>
+
+        </div>
         <p className="mt-2 text-white/60 max-w-2xl">
           MEUOJEC es el sistema de gestion integral de la Iglesia. Centraliza la administracion
           de miembros, finanzas, ministerios, comunicaciones y mas en un solo panel seguro

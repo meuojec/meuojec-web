@@ -5,6 +5,7 @@ export const revalidate = 0;
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { activarEvento, desactivarEvento } from "./actions";
+import BackButton from "@/app/components/BackButton";
 
 const DIAS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
@@ -75,7 +76,10 @@ export default async function EventosPage() {
   if (error) {
     return (
       <div className="space-y-3">
-        <h1 className="text-3xl font-bold">Eventos</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Eventos</h1>
+        </div>
         <p className="text-red-400">Error: {error.message}</p>
       </div>
     );

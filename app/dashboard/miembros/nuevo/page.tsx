@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import MemberWizardForm from "./MemberWizardForm";
+import BackButton from "@/app/components/BackButton";
 
 export default function NuevoMiembroPage() {
   return (

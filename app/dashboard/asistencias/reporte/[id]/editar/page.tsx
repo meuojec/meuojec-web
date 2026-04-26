@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import EditAsistenciaForm from "./EditAsistenciaForm";
+import BackButton from "@/app/components/BackButton";
 
 function toHHMM(h?: string | null) {
   if (!h) return "";

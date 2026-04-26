@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { asignarMiembro, removerMiembro } from "../actions";
+import BackButton from "@/app/components/BackButton";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -53,7 +54,10 @@ export default async function MinisterioDetallePage({ params }: Props) {
             style={{ backgroundColor: ministerio.color ?? "#6366f1" }}
           />
           <div>
-            <h1 className="text-3xl font-bold">{ministerio.nombre}</h1>
+            <div className="flex items-center gap-3">
+              <BackButton />
+              <h1 className="text-3xl font-bold">{ministerio.nombre}</h1>
+            </div>
             {ministerio.descripcion && (
               <p className="mt-1 text-white/60">{ministerio.descripcion}</p>
             )}

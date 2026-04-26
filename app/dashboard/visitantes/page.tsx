@@ -4,6 +4,7 @@ export const revalidate = 0;
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import BackButton from "@/app/components/BackButton";
 
 const ESTADO_STYLE: Record<string, string> = {
   nuevo: "border-sky-500/30 bg-sky-500/10 text-sky-200",
@@ -45,7 +46,10 @@ export default async function VisitantesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Visitantes</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-3xl font-bold">Visitantes</h1>
+          </div>
           <p className="mt-2 text-white/60">Registro y seguimiento de personas que visitan la iglesia.</p>
         </div>
         <Link

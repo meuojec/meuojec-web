@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import CategoriaForm from "../_components/CategoriaForm";
+import BackButton from "@/app/components/BackButton";
 
 export default async function NuevaCategoriaPage() {
   const supabase = await createClient();
@@ -17,7 +18,10 @@ export default async function NuevaCategoriaPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">Nueva categoría (IGLESIA)</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-xl font-semibold text-white">Nueva categoría (IGLESIA)</h1>
+        </div>
         <p className="text-sm text-white/60">Nombre y tipo son obligatorios.</p>
       </div>
 

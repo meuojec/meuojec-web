@@ -4,6 +4,7 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import BackButton from "@/app/components/BackButton";
 
 function Card({
   title,
@@ -72,7 +73,10 @@ export default async function InventarioPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Inventario</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-2xl font-semibold">Inventario</h1>
+          </div>
           <p className="mt-1 text-white/60">
             Control de productos, stock y movimientos.
           </p>

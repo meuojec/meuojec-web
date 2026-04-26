@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import TransaccionForm from "../../_components/TransaccionForm";
 import { getTransaccionIGLESIA } from "../../actions";
+import BackButton from "@/app/components/BackButton";
 
 export default async function EditarTransaccionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -52,7 +53,10 @@ export default async function EditarTransaccionPage({ params }: { params: Promis
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">Editar transacción</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-xl font-semibold text-white">Editar transacción</h1>
+        </div>
         <p className="text-sm text-white/60">Área fija: IGLESIA.</p>
       </div>
 

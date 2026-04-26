@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import CategoriaForm from "../../_components/CategoriaForm";
 import { getCategoriaIGLESIA } from "../../actions";
+import BackButton from "@/app/components/BackButton";
 
 export default async function EditarCategoriaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -37,7 +38,10 @@ export default async function EditarCategoriaPage({ params }: { params: Promise<
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">Editar categoría (IGLESIA)</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-xl font-semibold text-white">Editar categoría (IGLESIA)</h1>
+        </div>
         <p className="text-sm text-white/60">Edita nombre/tipo/orden/tipo default. El estado “Activa” se cambia también aquí o desde el listado.</p>
       </div>
 

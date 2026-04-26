@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { eliminarSeguimiento } from "./actions";
+import BackButton from "@/app/components/BackButton";
 
 const TIPO_STYLE: Record<string, string> = {
   visita: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
@@ -39,7 +40,10 @@ export default async function PastoralPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Seguimiento Pastoral</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-3xl font-bold">Seguimiento Pastoral</h1>
+          </div>
           <p className="mt-2 text-white/60">Registro confidencial de atención pastoral a miembros.</p>
         </div>
         <Link

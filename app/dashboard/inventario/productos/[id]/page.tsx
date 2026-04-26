@@ -8,6 +8,7 @@ import EditProductoForm from "./EditProductoForm";
 import LocationFilter from "./LocationFilter";
 import MovementsChart from "./MovementsChart";
 import { quickMovimiento } from "./quick-actions";
+import BackButton from "@/app/components/BackButton";
 
 export default async function EditProductoPage({
   params,
@@ -118,7 +119,10 @@ export default async function EditProductoPage({
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">{producto.nombre}</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-2xl font-semibold">{producto.nombre}</h1>
+          </div>
           <div className="text-sm text-white/60 mt-1">
             SKU: {producto.sku ?? "—"} | Barcode: {producto.barcode ?? "—"}
           </div>

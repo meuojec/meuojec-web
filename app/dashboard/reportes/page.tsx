@@ -5,6 +5,7 @@ export const revalidate = 0;
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import BackButton from "@/app/components/BackButton";
 
 export default async function ReportesHomePage() {
   const supabase = await createClient();
@@ -45,7 +46,10 @@ export default async function ReportesHomePage() {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-        <h1 className="text-xl font-bold text-white">Centro de Reportes</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-xl font-bold text-white">Centro de Reportes</h1>
+        </div>
         <p className="mt-1 text-sm text-white/70">
           Aquí es donde la app pasa de “registro” a “gestión”: análisis, tendencias y exportación.
         </p>

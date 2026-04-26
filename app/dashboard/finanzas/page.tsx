@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import BackButton from "@/app/components/BackButton";
 
 export default async function FinanzasLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();

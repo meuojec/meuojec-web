@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import MemberEditForm from "./MemberEditForm";
+import BackButton from "@/app/components/BackButton";
 
 type PageProps = { params: Promise<{ rut: string }> };
 
@@ -36,7 +37,10 @@ export default async function EditarMiembroPage({ params }: PageProps) {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold">Editar miembro</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Editar miembro</h1>
+        </div>
         <p className="text-white/60 mt-2">{data.rut}</p>
       </div>
 

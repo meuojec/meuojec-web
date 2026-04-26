@@ -3,12 +3,16 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import { crearAnuncio } from "../actions";
+import BackButton from "@/app/components/BackButton";
 
 export default function NuevoAnuncioPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Crear anuncio</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Crear anuncio</h1>
+        </div>
         <p className="mt-2 text-white/60">Publica una comunicación interna para el equipo o la congregación.</p>
       </div>
 

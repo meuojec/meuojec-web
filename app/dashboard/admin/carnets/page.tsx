@@ -5,6 +5,7 @@ export const revalidate = 0;
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CarnetsTools from "./_components/CarnetsTools";
+import BackButton from "@/app/components/BackButton";
 
 export default async function AdminCarnetsPage() {
   const supabase = await createClient();
@@ -21,7 +22,10 @@ export default async function AdminCarnetsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Administración · Carnets</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-2xl font-bold">Administración · Carnets</h1>
+        </div>
         <p className="text-white/60">
           Genera PDFs: carnet individual y carnets masivos (A4 · 8 por hoja).
         </p>

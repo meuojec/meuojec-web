@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { actualizarEstado, agregarSeguimiento } from "../actions";
+import BackButton from "@/app/components/BackButton";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -39,7 +40,10 @@ export default async function VisitanteDetallePage({ params }: Props) {
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{v.nombres} {v.apellidos ?? ""}</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-3xl font-bold">{v.nombres} {v.apellidos ?? ""}</h1>
+          </div>
           <div className="mt-2 flex items-center gap-2">
             <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${ESTADO_STYLE[v.estado] ?? ""}`}>
               {ESTADO_LABEL[v.estado] ?? v.estado}

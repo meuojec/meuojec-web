@@ -4,6 +4,7 @@ export const revalidate = 0;
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import BackButton from "@/app/components/BackButton";
 
 type SP = { ded?: string; limit?: string; foto?: string };
 
@@ -45,7 +46,10 @@ export default async function ImprimirCarnetsPage({
   return (
     <div className="mx-auto max-w-3xl p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-white">Imprimir carnets (A4)</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-2xl font-semibold text-white">Imprimir carnets (A4)</h1>
+        </div>
         <p className="mt-1 text-sm text-white/60">
           PDF con 8 carnets por hoja. Ideal para impresión masiva.
         </p>

@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import { registrarSeguimiento } from "../actions";
+import BackButton from "@/app/components/BackButton";
 
 export default function NuevoSeguimientoPage() {
   const hoy = new Date().toISOString().slice(0, 10);
@@ -10,7 +11,10 @@ export default function NuevoSeguimientoPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Nuevo registro pastoral</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Nuevo registro pastoral</h1>
+        </div>
         <p className="mt-2 text-white/60">Registra una visita, llamada o atención pastoral a un miembro.</p>
       </div>
 

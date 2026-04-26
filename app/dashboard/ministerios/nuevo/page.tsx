@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import { crearMinisterio } from "../actions";
+import BackButton from "@/app/components/BackButton";
 
 const COLORES = [
   { valor: "#6366f1", nombre: "Índigo" },
@@ -19,7 +20,10 @@ export default function NuevoMinisterioPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Nuevo ministerio</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Nuevo ministerio</h1>
+        </div>
         <p className="mt-2 text-white/60">Crea un departamento o ministerio de la iglesia.</p>
       </div>
 

@@ -7,6 +7,7 @@ import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import HorarioAutoForm from "./HorarioAutoForm";
+import BackButton from "@/app/components/BackButton";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -70,7 +71,10 @@ export default async function EditarEventoPage({ params }: Props) {
   return (
     <div className="space-y-8 max-w-xl">
       <div>
-        <h1 className="text-3xl font-bold text-white">Editar evento</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold text-white">Editar evento</h1>
+        </div>
         <p className="mt-2 text-white/60">
           Modifica la información del evento e indica si debe activarse automáticamente.
         </p>

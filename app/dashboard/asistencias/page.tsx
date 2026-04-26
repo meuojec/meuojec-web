@@ -4,6 +4,7 @@ export const revalidate = 0;
 
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import BackButton from "@/app/components/BackButton";
 
 type EventoActivo = {
   nombre: string | null;
@@ -89,7 +90,10 @@ export default async function AsistenciasHomePage() {
   if (recErr) {
     return (
       <div className="space-y-3">
-        <h1 className="text-3xl font-bold">Módulo de Asistencia</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Módulo de Asistencia</h1>
+        </div>
         <p className="text-red-400">Error: {recErr.message}</p>
       </div>
     );

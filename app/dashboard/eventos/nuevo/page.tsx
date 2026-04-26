@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { crearEvento } from "../actions";
+import BackButton from "@/app/components/BackButton";
 
 export default async function NuevoEventoPage() {
   const supabase = await createClient();
@@ -21,7 +22,10 @@ export default async function NuevoEventoPage() {
   return (
     <div className="space-y-6 max-w-xl">
       <div>
-        <h1 className="text-3xl font-bold text-white">Crear evento</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold text-white">Crear evento</h1>
+        </div>
         <p className="mt-2 text-white/60">
           Crea un nuevo evento. Puedes definir fecha y hora (opcional) y luego activarlo desde la lista.
         </p>

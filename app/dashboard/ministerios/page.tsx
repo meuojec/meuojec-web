@@ -4,6 +4,7 @@ export const revalidate = 0;
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import BackButton from "@/app/components/BackButton";
 
 const DEPARTAMENTOS = [
   "Administracion", "Aseo y Decoracion", "Coro de Adoracion",
@@ -61,7 +62,10 @@ export default async function MinisteriosPage() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-3xl font-bold">Departamentos / Ministerios</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Departamentos / Ministerios</h1>
+        </div>
         <p className="mt-2 text-white/60">Vista de departamentos, ministerios y grupos DED de la iglesia.</p>
       </div>
 

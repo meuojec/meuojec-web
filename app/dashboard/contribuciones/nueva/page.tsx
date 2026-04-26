@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import { registrarContribucion } from "../actions";
+import BackButton from "@/app/components/BackButton";
 
 export default function NuevaContribucionPage() {
   const hoy = new Date().toISOString().slice(0, 10);
@@ -10,7 +11,10 @@ export default function NuevaContribucionPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Registrar contribución</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold">Registrar contribución</h1>
+        </div>
         <p className="mt-2 text-white/60">Ingresa un diezmo, ofrenda u otra contribución.</p>
       </div>
 

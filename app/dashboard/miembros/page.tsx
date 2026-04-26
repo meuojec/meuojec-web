@@ -6,6 +6,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import MembersTableClient from "./MembersTableClient";
+import BackButton from "@/app/components/BackButton";
 
 type Miembro = {
   rut: string;
@@ -126,7 +127,10 @@ export default async function MiembrosPage({
   if (error) {
     return (
       <div className="space-y-3">
-        <h1 className="text-3xl font-bold text-white">Miembros</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-3xl font-bold text-white">Miembros</h1>
+        </div>
         <p className="text-red-400">Error: {error.message}</p>
       </div>
     );

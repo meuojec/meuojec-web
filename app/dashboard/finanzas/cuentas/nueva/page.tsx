@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import CuentaForm from "../_components/CuentaForm";
+import BackButton from "@/app/components/BackButton";
 
 export default async function NuevaCuentaPage() {
   const supabase = await createClient();
@@ -17,7 +18,10 @@ export default async function NuevaCuentaPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-white">Nueva cuenta (IGLESIA)</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-xl font-semibold text-white">Nueva cuenta (IGLESIA)</h1>
+        </div>
         <p className="text-sm text-white/60">Nombre, tipo y moneda son obligatorios.</p>
       </div>
 

@@ -7,6 +7,7 @@ import KpiCards from "./_components/KpiCards";
 import TotalesPorCategoria from "./_components/TotalesPorCategoria";
 import SerieMensual from "./_components/SerieMensual";
 import ExportCSVButton from "./_components/ExportCSVButton";
+import BackButton from "@/app/components/BackButton";
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -51,7 +52,10 @@ export default async function ReportesPage(props: {
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-white">Finanzas · Reportes (IGLESIA)</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-xl font-semibold text-white">Finanzas · Reportes (IGLESIA)</h1>
+          </div>
           <p className="text-sm text-white/60">KPIs, totales por categoría y serie mensual.</p>
         </div>
 

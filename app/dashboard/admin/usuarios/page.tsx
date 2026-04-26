@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import UserRolesTable from "../_components/UserRolesTable";
 import { getRoles, getUsersWithRoles } from "../actions";
 import { IdCard, Printer, Users, BookOpen, ArrowRight } from "lucide-react";
+import BackButton from "@/app/components/BackButton";
 
 function ToolCard({
   title,
@@ -83,7 +84,10 @@ export default async function AdminUsuariosPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Administracion &middot; Usuarios</h1>
+        <div className="flex items-center gap-3">
+          <BackButton />
+          <h1 className="text-2xl font-bold">Administracion &middot; Usuarios</h1>
+        </div>
         <p className="text-white/60">
           Crea usuarios, edita nombre/estado, asigna roles y cambia contrasenas (sin emails).
         </p>

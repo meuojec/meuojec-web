@@ -4,6 +4,7 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import BackButton from "@/app/components/BackButton";
 
 export default async function AlertasPage() {
   const supabase = await createClient();
@@ -53,7 +54,10 @@ export default async function AlertasPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Alertas</h1>
+          <div className="flex items-center gap-3">
+            <BackButton />
+            <h1 className="text-2xl font-semibold">Alertas</h1>
+          </div>
           <p className="mt-1 text-white/60">Stock bajo minimo o sin stock.</p>
         </div>
         <div className="flex gap-2">

@@ -4,6 +4,7 @@ export const revalidate = 0;
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DeleteClientWrapper from "./_components/DeleteClientWrapper";
+import BackButton from "@/app/components/BackButton";
 
 function toHHMM(h?: string | null) {
   if (!h) return null;
