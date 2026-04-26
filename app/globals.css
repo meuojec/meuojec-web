@@ -33,10 +33,12 @@ html.light .dashboard-shell header {
   filter: invert(1) hue-rotate(180deg);
 }
 
-/* Contenido principal → fondo claro, texto oscuro */
+/* Contenido principal → fondo claro, texto oscuro.
+   IMPORTANTE: background-color: black es intencional — invert(1) convierte black→white.
+   Si no hay background explícito, el body oscuro se "filtra" a través y no se invierte. */
 html.light .dashboard-shell main {
   filter: invert(1) hue-rotate(180deg);
-  background-color: #f8fafc;
+  background-color: #000000;
 }
 
 /* Fotos y avatares: re-invertir para mostrar colores naturales */
