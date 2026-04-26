@@ -15,7 +15,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MEUOJEC APP",
-  description: "Aplicación Creada por Breda Pro Network",
+  description: "Sistema de gestion integral para la iglesia MEUOJEC. Desarrollado por Jerry Sainteron.",
+  authors: [{ name: "Jerry Sainteron", url: "https://www.linkedin.com/in/jerrysainteron/" }],
+  creator: "Jerry Sainteron",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({

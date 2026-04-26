@@ -194,18 +194,40 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
   ];
 
   return (
-    <aside className="h-full w-72 border-r border-white/10 bg-black/40 backdrop-blur px-6 py-8 overflow-y-auto">
+    <aside className="h-full w-72 border-r border-white/10 bg-black/40 backdrop-blur px-6 py-8 overflow-y-auto flex flex-col">
       <div className="mb-8 px-3">
         <div className="text-xl font-bold tracking-wide text-white">MEUOJEC</div>
         <div className="text-sm text-white/50">Panel de gestion</div>
       </div>
 
-      <Section title="GESTION" items={gestion} />
-      <Section title="PASTORAL" items={pastoral} />
-      <Section title="COMUNICACION" items={comunicacion} />
-      <Section title="ANALISIS" items={analisis} />
-      <Section title="SISTEMA" items={sistema} />
-      <FinanzasSubmenu enabled={!!navPerms.fin} />
+      <div className="flex-1">
+        <Section title="GESTION" items={gestion} />
+        <Section title="PASTORAL" items={pastoral} />
+        <Section title="COMUNICACION" items={comunicacion} />
+        <Section title="ANALISIS" items={analisis} />
+        <Section title="SISTEMA" items={sistema} />
+        <FinanzasSubmenu enabled={!!navPerms.fin} />
+      </div>
+
+      {/* Footer con creditos del desarrollador */}
+      <div className="mt-8 border-t border-white/10 pt-5 px-1">
+        <div className="text-[10px] text-white/25 leading-relaxed">
+          <div className="mb-1">
+            Desarrollado por{" "}
+            <a
+              href="https://www.linkedin.com/in/jerrysainteron/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/45 hover:text-white/70 underline underline-offset-2 transition-colors"
+            >
+              Jerry Sainteron
+            </a>
+          </div>
+          <div>
+            &copy; {new Date().getFullYear()} MEUOJEC &middot; Todos los derechos reservados
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }
