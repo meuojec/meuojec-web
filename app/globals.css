@@ -18,38 +18,21 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ── Modo claro (alta luminosidad para exteriores) ───────────────────────────── */
-html.light {
-  --background: #f1f5f9;
-  --foreground: #0f172a;
-}
-
-html.light body {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-/* Invertir el area principal del dashboard en modo claro */
+/* ── Modo exterior (alta luminosidad para uso al aire libre) ─────────────────── */
+/* Aumenta el brillo sin invertir colores: oscuro → gris visible en luz solar */
 html.light .dashboard-shell {
-  filter: invert(1) hue-rotate(180deg);
+  filter: brightness(5.5) contrast(0.82) saturate(1.15);
 }
 
-/* Restaurar imagenes y logos en modo claro */
-html.light .dashboard-shell img,
-html.light .dashboard-shell svg.no-invert {
-  filter: invert(1) hue-rotate(180deg);
-}
-
-/* QR codes y fotos no deben invertirse */
-html.light .dashboard-shell canvas,
-html.light .dashboard-shell [data-noinvert] {
-  filter: invert(1) hue-rotate(180deg);
+/* Las fotos de perfil NO deben sobrexpornerse */
+html.light .dashboard-shell img {
+  filter: brightness(0.5) contrast(1.2) saturate(0.9);
 }
 
 /* ── Animacion skeleton ──────────────────────────────────────────────────────── */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
 
 .skeleton-shimmer {
