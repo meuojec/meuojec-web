@@ -3,6 +3,8 @@
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import ThemeToggle from "@/app/components/ThemeToggle";
+import RealtimeNotifications from "@/app/components/RealtimeNotifications";
 
 export default function TopbarClient({
   onMenuToggle,
@@ -22,6 +24,7 @@ export default function TopbarClient({
 
   return (
     <header className="h-14 border-b border-white/10 bg-black/20 backdrop-blur flex items-center px-4 md:px-6 gap-3 sticky top-0 z-20">
+      {/* Toggle sidebar */}
       <button
         onClick={onMenuToggle}
         className="flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 hover:bg-white/5 transition shrink-0"
@@ -36,12 +39,22 @@ export default function TopbarClient({
 
       <div className="text-sm text-white/60 hidden sm:block">Sistema de Administracion</div>
 
-      <button
-        onClick={logout}
-        className="ml-auto text-sm rounded-lg border border-white/10 px-3 py-1.5 hover:bg-white/5 transition"
-      >
-        Salir
-      </button>
+      {/* Controles lado derecho */}
+      <div className="ml-auto flex items-center gap-2">
+        {/* Notificaciones en tiempo real */}
+        <RealtimeNotifications />
+
+        {/* Toggle modo claro/oscuro */}
+        <ThemeToggle />
+
+        {/* Cerrar sesion */}
+        <button
+          onClick={logout}
+          className="text-sm rounded-lg border border-white/10 px-3 py-1.5 hover:bg-white/5 transition text-white/70 hover:text-white"
+        >
+          Salir
+        </button>
+      </div>
     </header>
   );
 }

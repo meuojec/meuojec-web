@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b0b0b;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -12,15 +12,53 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ── Modo claro (alta luminosidad para exteriores) ───────────────────────────── */
+html.light {
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+}
+
+html.light body {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Invertir el area principal del dashboard en modo claro */
+html.light .dashboard-shell {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Restaurar imagenes y logos en modo claro */
+html.light .dashboard-shell img,
+html.light .dashboard-shell svg.no-invert {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* QR codes y fotos no deben invertirse */
+html.light .dashboard-shell canvas,
+html.light .dashboard-shell [data-noinvert] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* ── Animacion skeleton ──────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
