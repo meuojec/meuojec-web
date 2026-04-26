@@ -122,7 +122,7 @@ function FinanzasSubmenu({ enabled }: { enabled: boolean }) {
             ].join(" ")}
           />
           <Wallet className="h-4 w-4 opacity-90" />
-          <span>Transacciones</span>
+          <span>Finanzas</span>
         </Link>
       </div>
     );
@@ -135,10 +135,11 @@ function FinanzasSubmenu({ enabled }: { enabled: boolean }) {
       </div>
       <nav className="mt-2 space-y-1">
         {[
-          { href: "/dashboard/finanzas/transacciones", label: "Transacciones", icon: true },
-          { href: "/dashboard/finanzas/cuentas",       label: "Cuentas",       icon: false },
-          { href: "/dashboard/finanzas/categorias",    label: "Categorias",    icon: false },
-          { href: "/dashboard/finanzas/cierres",       label: "Cierres",       icon: false },
+          { href: "/dashboard/finanzas/transacciones",   label: "Transacciones",   icon: true },
+          { href: "/dashboard/finanzas/contribuciones",  label: "Contribuciones",  icon: false },
+          { href: "/dashboard/finanzas/cuentas",         label: "Cuentas",         icon: false },
+          { href: "/dashboard/finanzas/categorias",      label: "Categorias",      icon: false },
+          { href: "/dashboard/finanzas/cierres",         label: "Cierres",         icon: false },
         ].map(({ href, label, icon }) => (
           <Link
             key={href}
@@ -165,16 +166,17 @@ function FinanzasSubmenu({ enabled }: { enabled: boolean }) {
 
 export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
   const gestion: NavItem[] = [
-    { label: "Dashboard",   href: "/dashboard",             icon: LayoutDashboard, enabled: !!navPerms.dash },
-    { label: "Miembros",    href: "/dashboard/miembros",    icon: Users,           enabled: !!navPerms.miembros },
-    { label: "Asistencias", href: "/dashboard/asistencias", icon: ClipboardList,   enabled: !!navPerms.asist },
-    { label: "Eventos",     href: "/dashboard/eventos",     icon: CalendarDays,    enabled: !!navPerms.eventos },
+    { label: "Dashboard",    href: "/dashboard",              icon: LayoutDashboard, enabled: !!navPerms.dash },
+    { label: "Miembros",     href: "/dashboard/miembros",     icon: Users,           enabled: !!navPerms.miembros },
+    { label: "Asistencias",  href: "/dashboard/asistencias",  icon: ClipboardList,   enabled: !!navPerms.asist },
+    { label: "Eventos",      href: "/dashboard/eventos",      icon: CalendarDays,    enabled: !!navPerms.eventos },
+    { label: "Esc. Dominical", href: "/dashboard/ded/sesion", icon: BookOpen,        enabled: !!navPerms.ded },
   ];
 
   const pastoral: NavItem[] = [
-    { label: "Visitantes",  href: "/dashboard/visitantes",  icon: UserCheck, enabled: !!navPerms.visitantes },
-    { label: "Pastoral",    href: "/dashboard/pastoral",    icon: Heart,     enabled: !!navPerms.pastoral },
-    { label: "Ministerios", href: "/dashboard/ministerios", icon: Church,    enabled: !!navPerms.ministerios },
+    { label: "Visitantes",   href: "/dashboard/visitantes",   icon: UserCheck, enabled: !!navPerms.visitantes },
+    { label: "Pastoral",     href: "/dashboard/pastoral",     icon: Heart,     enabled: !!navPerms.pastoral },
+    { label: "Ministerios",  href: "/dashboard/ministerios",  icon: Church,    enabled: !!navPerms.ministerios },
   ];
 
   const comunicacion: NavItem[] = [
@@ -187,9 +189,8 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
   ];
 
   const sistema: NavItem[] = [
-    { label: "Inventario",     href: "/dashboard/inventario",       icon: Package,  enabled: !!navPerms.inv },
-    { label: "DED",            href: "/dashboard/ded/sesion",       icon: BookOpen, enabled: !!navPerms.ded },
-    { label: "Administracion", href: "/dashboard/admin/usuarios",   icon: Settings, enabled: !!navPerms.admin },
+    { label: "Inventario",     href: "/dashboard/inventario",     icon: Package,  enabled: !!navPerms.inv },
+    { label: "Administracion", href: "/dashboard/admin/usuarios", icon: Settings, enabled: !!navPerms.admin },
   ];
 
   return (

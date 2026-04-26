@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ToggleActiva from "./_components/ToggleActiva";
@@ -22,9 +23,17 @@ export default async function CategoriasPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-white">Finanzas · Categorías (IGLESIA)</h1>
-          <p className="text-sm text-white/60">Ingreso / Egreso, orden y estado.</p>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/finanzas/transacciones"
+            className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-semibold text-white">Finanzas &middot; Categorias</h1>
+            <p className="text-sm text-white/60">Ingreso / Egreso, orden y estado.</p>
+          </div>
         </div>
 
         {isAdmin && (
@@ -32,7 +41,7 @@ export default async function CategoriasPage() {
             href="/dashboard/finanzas/categorias/nueva"
             className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10"
           >
-            + Nueva categoría
+            + Nueva categoria
           </Link>
         )}
       </div>
@@ -51,7 +60,6 @@ export default async function CategoriasPage() {
                 <th className="px-4 py-3">Orden</th>
                 <th className="px-4 py-3">Nombre</th>
                 <th className="px-4 py-3">Tipo</th>
-                <th className="px-4 py-3">Tipo default</th>
                 <th className="px-4 py-3">Activa</th>
                 <th className="px-4 py-3 text-right">Acciones</th>
               </tr>
@@ -60,8 +68,8 @@ export default async function CategoriasPage() {
             <tbody>
               {rows.length === 0 && res.ok && (
                 <tr>
-                  <td className="px-4 py-6 text-white/60" colSpan={6}>
-                    No hay categorías creadas para IGLESIA.
+                  <td className="px-4 py-6 text-white/60" colSpan={5}>
+                    No hay categorias creadas para IGLESIA.
                   </td>
                 </tr>
               )}
@@ -70,8 +78,16 @@ export default async function CategoriasPage() {
                 <tr key={c.id} className="border-b border-white/5 hover:bg-white/[0.03]">
                   <td className="px-4 py-3 text-white/70">{c.orden ?? 0}</td>
                   <td className="px-4 py-3 font-medium text-white">{c.nombre ?? "—"}</td>
-                  <td className="px-4 py-3 text-white/70">{c.tipo ?? "—"}</td>
-                  <td className="px-4 py-3 text-white/70">{c.tipo_default ?? "NULL"}</td>
+                  <td className="px-4 py-3">
+                    <span className={[
+                      "text-xs font-semibold px-2 py-0.5 rounded-full",
+                      (c.tipo ?? "").toUpperCase() === "INGRESO"
+                        ? "bg-emerald-500/15 text-emerald-300"
+                        : "bg-red-500/15 text-red-300",
+                    ].join(" ")}>
+                      {c.tipo ?? "—"}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">
                     <ToggleActiva id={c.id} activa={!!c.activa} disabled={!isAdmin} />
                   </td>
@@ -96,7 +112,7 @@ export default async function CategoriasPage() {
 
       {!isAdmin && (
         <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-white/60">
-          Tu usuario no es admin: puedes ver categorías, pero no editarlas.
+          Tu usuario no es admin: puedes ver categorias, pero no editarlas.
         </div>
       )}
     </div>

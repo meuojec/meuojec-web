@@ -306,7 +306,6 @@ export default function MemberWizardForm() {
     if (key === "basico") {
       const rutNorm = normalizeRut(f.rut);
       if (!rutNorm) errors.rut = "RUT inválido. Debe ir sin puntos y con guion.";
-      if (rutWarning) errors.rut = "Este RUT ya está registrado.";
       if (!f.nombres.trim()) errors.nombres = "Nombres requerido.";
       if (!f.apellidos.trim()) errors.apellidos = "Apellidos requerido.";
       if (!f.sexo.trim()) errors.sexo = "Sexo requerido.";

@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ToggleActiva from "./_components/ToggleActiva";
@@ -22,9 +23,17 @@ export default async function CuentasPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-white">Finanzas · Cuentas (IGLESIA)</h1>
-          <p className="text-sm text-white/60">Cajas y bancos donde se registran movimientos.</p>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/finanzas/transacciones"
+            className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-semibold text-white">Finanzas &middot; Cuentas</h1>
+            <p className="text-sm text-white/60">Cajas y bancos donde se registran movimientos.</p>
+          </div>
         </div>
 
         {isAdmin && (

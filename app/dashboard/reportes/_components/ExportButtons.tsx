@@ -1,4 +1,3 @@
-// app/dashboard/reportes/_components/ExportButtons.tsx
 "use client";
 
 import { useTransition } from "react";
@@ -10,10 +9,11 @@ export default function ExportButtons({
   filename: string;
   onExportCsv: () => Promise<{ csv: string }>;
 }) {
-  const [pending, start] = useTransition();
+  const [pendingCsv, startCsv] = useTransition();
+  const [pendingXls, startXls] = useTransition();
 
-  function download(text: string, name: string) {
-    const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+  function downloadBlob(text: string, name: string, mime: string) {
+    const blob = new Blob([text], { type: mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -24,43 +24,60 @@ export default function ExportButtons({
     URL.revokeObjectURL(url);
   }
 
+  function csvToExcelBlob(csv: string): string {
+    // Add BOM for Excel to detect UTF-8 properly
+    return "\uFEFF" + csv;
+  }
+
+  const baseName = filename.replace(/\.csv$/, "");
+
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       <button
         type="button"
-        disabled={pending}
+        disabled={pendingCsv}
         onClick={() =>
-          start(async () => {
+          startCsv(async () => {
             const { csv } = await onExportCsv();
-            download(csv, filename);
+            downloadBlob(csv, filename, "text/csv;charset=utf-8");
           })
         }
         className={[
           "rounded-xl border px-3 py-2 text-sm font-semibold transition",
-          pending
+          pendingCsv
             ? "border-white/10 bg-white/5 text-white/40 cursor-not-allowed"
             : "border-emerald-500/30 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/15",
         ].join(" ")}
       >
-        {pending ? "Exportando..." : "Exportar CSV"}
+        {pendingCsv ? "Exportando..." : "CSV"}
       </button>
 
       <button
         type="button"
-        disabled
-        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white/40 cursor-not-allowed"
-        title="Excel lo activamos en la Fase 2"
+        disabled={pendingXls}
+        onClick={() =>
+          startXls(async () => {
+            const { csv } = await onExportCsv();
+            // Export as Excel-compatible CSV with BOM
+            downloadBlob(csvToExcelBlob(csv), `${baseName}.xlsx.csv`, "text/csv;charset=utf-8");
+          })
+        }
+        className={[
+          "rounded-xl border px-3 py-2 text-sm font-semibold transition",
+          pendingXls
+            ? "border-white/10 bg-white/5 text-white/40 cursor-not-allowed"
+            : "border-blue-500/30 bg-blue-500/10 text-blue-200 hover:bg-blue-500/15",
+        ].join(" ")}
       >
-        Excel (pronto)
+        {pendingXls ? "Exportando..." : "Excel"}
       </button>
 
       <button
         type="button"
-        disabled
-        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white/40 cursor-not-allowed"
-        title="PDF lo activamos en la Fase 2"
+        onClick={() => window.print()}
+        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white/70 hover:bg-white/10"
       >
-        PDF (pronto)
+        PDF / Imprimir
       </button>
     </div>
   );

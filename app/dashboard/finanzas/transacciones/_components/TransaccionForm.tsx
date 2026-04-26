@@ -66,12 +66,12 @@ export default function TransaccionForm(props: Props) {
     return [];
   }, [tipo, props.categorias]);
 
+  // Limpiar categoria si el tipo cambia
   useEffect(() => {
     if (tipo === "TRANSFERENCIA") {
       setCategoriaId("");
       return;
     }
-    // si la categoría actual no corresponde al tipo, la limpiamos
     if (categoriaId && !categoriasFiltradas.some(c => c.id === categoriaId)) {
       setCategoriaId("");
     }
@@ -80,6 +80,22 @@ export default function TransaccionForm(props: Props) {
   useEffect(() => {
     if (tipo !== "TRANSFERENCIA") setCuentaDestinoId("");
   }, [tipo]);
+
+  // Auto-seleccionar categoria "Terreno" cuando la cuenta seleccionada es "Terreno"
+  useEffect(() => {
+    if (!cuentaId) return;
+    const cuenta = props.cuentas.find(c => c.id === cuentaId);
+    if (!cuenta) return;
+    const esTerreno = (cuenta.nombre ?? "").toLowerCase().trim() === "terreno";
+    if (esTerreno) {
+      const catTerreno = props.categorias.find(
+        c => (c.nombre ?? "").toLowerCase().trim() === "terreno"
+      );
+      if (catTerreno) {
+        setCategoriaId(catTerreno.id);
+      }
+    }
+  }, [cuentaId, props.cuentas, props.categorias]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -108,7 +124,7 @@ export default function TransaccionForm(props: Props) {
         return;
       }
 
-      setOk(props.mode === "create" ? "Transacción creada." : "Transacción actualizada.");
+      setOk(props.mode === "create" ? "Transaccion creada." : "Transaccion actualizada.");
       router.push("/dashboard/finanzas/transacciones");
       router.refresh();
     });
@@ -155,7 +171,7 @@ export default function TransaccionForm(props: Props) {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-white/70 mb-1">Método pago</label>
+          <label className="block text-xs font-semibold text-white/70 mb-1">Metodo pago</label>
           <select
             value={metodoPago}
             onChange={(e) => setMetodoPago(e.target.value)}
@@ -205,7 +221,12 @@ export default function TransaccionForm(props: Props) {
           </div>
         ) : (
           <div className="lg:col-span-2">
-            <label className="block text-xs font-semibold text-white/70 mb-1">Categoría *</label>
+            <label className="block text-xs font-semibold text-white/70 mb-1">
+              Categoria *
+              {props.cuentas.find(c => c.id === cuentaId && (c.nombre ?? "").toLowerCase().trim() === "terreno") && (
+                <span className="ml-2 text-xs text-amber-400/80 font-normal">(auto-seleccionada)</span>
+              )}
+            </label>
             <select
               value={categoriaId}
               onChange={(e) => setCategoriaId(e.target.value)}
@@ -233,7 +254,7 @@ export default function TransaccionForm(props: Props) {
         </div>
 
         <div className="lg:col-span-2">
-          <label className="block text-xs font-semibold text-white/70 mb-1">Descripción</label>
+          <label className="block text-xs font-semibold text-white/70 mb-1">Descripcion</label>
           <input
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}

@@ -5,6 +5,8 @@ export const revalidate = 0;
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import SectionCard from "../_components/SectionCard";
 import KpiCard from "../_components/KpiCard";
 import ReportFilters from "../_components/ReportFilters";
@@ -79,11 +81,19 @@ export default async function ReporteFinanzasPage(props: {
     <div className="space-y-6">
       <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold text-white">Reportes · Finanzas</h1>
-            <p className="mt-1 text-sm text-white/70">
-              Ingresos vs egresos, por categoría, por cuenta, saldo y base para cierres.
-            </p>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/reportes"
+              className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-bold text-white">Reportes · Finanzas</h1>
+              <p className="mt-1 text-sm text-white/70">
+                Ingresos vs egresos, por categoria, por cuenta, saldo y base para cierres.
+              </p>
+            </div>
           </div>
 
           <ExportClient

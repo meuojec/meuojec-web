@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import FiltrosTransacciones from "./_components/FiltrosTransacciones";
@@ -48,7 +49,6 @@ function fmtDate(iso?: string | null) {
   return `${d}-${m}-${y}`;
 }
 
-// ✅ arma querystring SOLO con strings (evita Symbol)
 function buildQS(
   base: Record<string, string | undefined>,
   extra: Record<string, string | undefined>
@@ -83,14 +83,12 @@ export default async function TransaccionesPage(props: {
     .maybeSingle();
   const isAdmin = prof?.role === "admin";
 
-  // ✅ unwrap searchParams (puede ser Promise)
   const spRaw = await Promise.resolve(props.searchParams ?? {});
   const get1 = (k: string) => {
     const v = spRaw[k];
     return Array.isArray(v) ? (v[0] ?? "") : (v ?? "");
   };
 
-  // filtros
   const tipo = (get1("tipo") || "TODOS").toUpperCase();
   const cuenta = get1("cuenta") || "";
   const categoria = get1("categoria") || "";
@@ -103,7 +101,6 @@ export default async function TransaccionesPage(props: {
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  // data para filtros/labels (solo activas)
   const { data: cuentasData } = await supabase
     .from("fin_cuentas")
     .select("id,nombre,tipo,moneda,activa")
@@ -122,7 +119,24 @@ export default async function TransaccionesPage(props: {
   const cuentas = (cuentasData ?? []) as Cuenta[];
   const categoriasArr = (categoriasData ?? []) as Categoria[];
 
-  // query movimientos
+  // Fondo Terreno: total acumulado de la cuenta "Terreno"
+  const terrenoCuenta = cuentas.find(
+    (c) => (c.nombre ?? "").toLowerCase().trim() === "terreno"
+  );
+  let fondoTerreno = 0;
+  if (terrenoCuenta) {
+    const { data: terrenoMovs } = await supabase
+      .from("fin_movimientos")
+      .select("monto,tipo")
+      .eq("area", "IGLESIA")
+      .eq("cuenta_id", terrenoCuenta.id);
+    fondoTerreno = (terrenoMovs ?? []).reduce((acc, r) => {
+      if (r.tipo === "INGRESO") return acc + (r.monto ?? 0);
+      if (r.tipo === "EGRESO") return acc - (r.monto ?? 0);
+      return acc;
+    }, 0);
+  }
+
   let query = supabase
     .from("fin_movimientos")
     .select(
@@ -143,7 +157,6 @@ export default async function TransaccionesPage(props: {
   const { data: rowsData, error, count } = await query;
   const rows = (rowsData ?? []) as Mov[];
 
-  // KPIs (por página)
   const totalIngresos = rows.reduce(
     (acc, r) => acc + ((r.tipo === "INGRESO" ? r.monto : 0) ?? 0),
     0
@@ -159,7 +172,6 @@ export default async function TransaccionesPage(props: {
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / pageSize));
 
-  // params base para paginación
   const baseParams: Record<string, string | undefined> = {
     tipo: tipo !== "TODOS" ? tipo : "",
     cuenta,
@@ -171,30 +183,35 @@ export default async function TransaccionesPage(props: {
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-white">Transacciones</h1>
-          <p className="text-sm text-white/60">Ingresos, egresos y transferencias.</p>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/finanzas"
+            className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-semibold text-white">Transacciones</h1>
+            <p className="text-sm text-white/60">Ingresos, egresos y transferencias.</p>
+          </div>
         </div>
 
-        {/* ✅ Acciones arriba a la derecha */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* ✅ Ver reportes (para todos) */}
           <Link
             href="/dashboard/reportes/finanzas"
             className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/5 hover:text-white"
-            title="Ir a Reportes de Finanzas"
           >
             Ver reportes
           </Link>
 
-          {/* ✅ Nueva transacción (solo admin) */}
           {isAdmin && (
             <Link
               href="/dashboard/finanzas/transacciones/nueva"
               className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10"
             >
-              Nueva transacción
+              Nueva transaccion
             </Link>
           )}
         </div>
@@ -202,18 +219,26 @@ export default async function TransaccionesPage(props: {
 
       <FiltrosTransacciones cuentas={cuentas} categorias={categoriasArr} />
 
-      <div className="grid gap-3 md:grid-cols-3">
+      {/* KPI Cards */}
+      <div className="grid gap-3 md:grid-cols-4">
         <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <div className="text-xs text-white/60">Total ingresos (página)</div>
-          <div className="text-xl font-semibold text-white">{fmtMoney(totalIngresos)}</div>
+          <div className="text-xs text-white/60">Total ingresos (pagina)</div>
+          <div className="text-xl font-semibold text-emerald-400">{fmtMoney(totalIngresos)}</div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <div className="text-xs text-white/60">Total egresos (página)</div>
-          <div className="text-xl font-semibold text-white">{fmtMoney(totalEgresos)}</div>
+          <div className="text-xs text-white/60">Total egresos (pagina)</div>
+          <div className="text-xl font-semibold text-red-400">{fmtMoney(totalEgresos)}</div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <div className="text-xs text-white/60">Saldo (página)</div>
-          <div className="text-xl font-semibold text-white">{fmtMoney(saldo)}</div>
+          <div className="text-xs text-white/60">Saldo (pagina)</div>
+          <div className={["text-xl font-semibold", saldo >= 0 ? "text-white" : "text-red-400"].join(" ")}>{fmtMoney(saldo)}</div>
+        </div>
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
+          <div className="text-xs text-amber-300/80">Fondo Terreno (acumulado)</div>
+          <div className="text-xl font-semibold text-amber-300">{fmtMoney(fondoTerreno)}</div>
+          {!terrenoCuenta && (
+            <div className="mt-1 text-xs text-white/40">Sin cuenta Terreno</div>
+          )}
         </div>
       </div>
 
@@ -226,9 +251,9 @@ export default async function TransaccionesPage(props: {
                 <th className="px-4 py-3">Tipo</th>
                 <th className="px-4 py-3">Monto</th>
                 <th className="px-4 py-3">Cuenta</th>
-                <th className="px-4 py-3">Categoría</th>
+                <th className="px-4 py-3">Categoria</th>
                 <th className="px-4 py-3">Referencia</th>
-                <th className="px-4 py-3">Descripción</th>
+                <th className="px-4 py-3">Descripcion</th>
                 <th className="px-4 py-3 text-right">Acciones</th>
               </tr>
             </thead>
@@ -257,7 +282,16 @@ export default async function TransaccionesPage(props: {
                 return (
                   <tr key={r.id} className="border-b border-white/5 hover:bg-white/[0.03]">
                     <td className="px-4 py-3 text-white/80">{fmtDate(r.fecha)}</td>
-                    <td className="px-4 py-3 text-white/80">{r.tipo ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <span className={[
+                        "text-xs font-semibold px-2 py-0.5 rounded-full",
+                        r.tipo === "INGRESO" ? "bg-emerald-500/15 text-emerald-300" :
+                        r.tipo === "EGRESO" ? "bg-red-500/15 text-red-300" :
+                        "bg-white/10 text-white/70"
+                      ].join(" ")}>
+                        {r.tipo ?? "—"}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 font-semibold text-white">{fmtMoney(r.monto)}</td>
                     <td className="px-4 py-3 text-white/80">
                       {cta ? `${cta.nombre} (${cta.tipo ?? "—"})` : "—"}
@@ -276,7 +310,6 @@ export default async function TransaccionesPage(props: {
                           >
                             Editar
                           </Link>
-
                           <DeleteButton id={r.id} />
                         </div>
                       ) : (
@@ -292,7 +325,7 @@ export default async function TransaccionesPage(props: {
 
         <div className="flex items-center justify-between px-4 py-3 text-xs text-white/60">
           <div>
-            Página {page} de {totalPages} · Total {count ?? 0}
+            Pagina {page} de {totalPages} &middot; Total {count ?? 0}
           </div>
 
           <div className="flex gap-2">
@@ -326,12 +359,6 @@ export default async function TransaccionesPage(props: {
           </div>
         </div>
       </div>
-
-      {!isAdmin && (
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-white/60">
-          Tu usuario no es admin: puedes ver transacciones, pero no editarlas.
-        </div>
-      )}
     </div>
   );
 }
