@@ -1,4 +1,4 @@
-// proxy.ts — middleware de Next.js 16 (renombrado desde middleware.ts)
+// proxy.ts — middleware central de Next.js 16
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
@@ -26,9 +26,30 @@ export default async function proxy(request: NextRequest) {
     }
   );
 
-  // Refresca el token de sesion automaticamente cuando esta por vencer.
-  // Usar getUser() (valida en servidor), NO getSession().
-  await supabase.auth.getUser();
+  // Refresca el token y obtiene el usuario autenticado
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  // Proteccion central: si no hay sesion, redirigir a /login
+  // Excepcion: cron tiene su propio Bearer token
+  const isDashboard = pathname.startsWith("/dashboard");
+  const isProtectedApi =
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/eventos/cron");
+
+  if ((isDashboard || isProtectedApi) && !user) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Si ya tiene sesion y visita /login o raiz, redirigir al dashboard
+  if (user && (pathname === "/login" || pathname === "/")) {
+    const dashUrl = request.nextUrl.clone();
+    dashUrl.pathname = "/dashboard";
+    return NextResponse.redirect(dashUrl);
+  }
 
   return supabaseResponse;
 }
@@ -39,5 +60,6 @@ export const config = {
     "/api/:path*",
     "/auth/:path*",
     "/login",
+    "/",
   ],
 };
