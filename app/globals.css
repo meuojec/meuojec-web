@@ -18,15 +18,30 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* ── Modo exterior (alta luminosidad para uso al aire libre) ─────────────────── */
-/* Aumenta el brillo sin invertir colores: oscuro → gris visible en luz solar */
-html.light .dashboard-shell {
-  filter: brightness(5.5) contrast(0.82) saturate(1.15);
+/* ── MODO CLARO ───────────────────────────────────────────────────────────────── */
+/* Sidebar queda oscuro (patrón profesional tipo VS Code / Slack).               */
+/* Solo el topbar y el contenido principal se invierten a fondo blanco.          */
+
+/* Variables globales: cambia el body a fondo claro */
+html.light {
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
-/* Las fotos de perfil NO deben sobrexpornerse */
-html.light .dashboard-shell img {
-  filter: brightness(0.5) contrast(1.2) saturate(0.9);
+/* Topbar → fondo claro, texto oscuro */
+html.light .dashboard-shell header {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Contenido principal → fondo claro, texto oscuro */
+html.light .dashboard-shell main {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #f8fafc;
+}
+
+/* Fotos y avatares: re-invertir para mostrar colores naturales */
+html.light .dashboard-shell main img {
+  filter: invert(1) hue-rotate(180deg);
 }
 
 /* ── Animacion skeleton ──────────────────────────────────────────────────────── */
