@@ -158,7 +158,13 @@ export default async function AsistenciasHomePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/movil/asistencia"
+            className="rounded-lg border border-emerald-500/30 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20 transition"
+          >
+            📱 Modo móvil
+          </Link>
           <Link
             href="/dashboard/asistencias/escanear"
             className="rounded-lg border border-white/10 bg-white/10 px-4 py-2 text-sm hover:bg-white/15"
@@ -204,12 +210,17 @@ export default async function AsistenciasHomePage() {
       </div>
 
       {/* Acciones principales */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <ActionCard
-          title="Escanear Asistencia"
-          desc="Registrar asistencia al instante (QR / búsqueda)."
-          href="/dashboard/asistencias/escanear"
+          title="📱 Modo móvil"
+          desc="Optimizado para celular: QR + búsqueda. Instalable como app."
+          href="/movil/asistencia"
           primary
+        />
+        <ActionCard
+          title="Escanear (PC)"
+          desc="Modo semáforo con cámara para registrar desde el computador."
+          href="/dashboard/asistencias/escanear"
         />
         <ActionCard
           title="Reportes y filtros"
@@ -218,7 +229,7 @@ export default async function AsistenciasHomePage() {
         />
         <ActionCard
           title="Miembros inactivos"
-          desc="Detecta quién no ha asistido en semanas y genera seguimiento pastoral."
+          desc="Detecta quién no ha asistido en semanas."
           href="/dashboard/asistencias/inactivos"
           warning
         />
@@ -317,7 +328,7 @@ function ActionCard({
     : warning
     ? "bg-orange-500/10 hover:bg-orange-500/15 border-orange-500/20"
     : "bg-white/5 hover:bg-white/10";
-  const cta = primary ? "Abrir scanner →" : warning ? "Ver inactivos →" : "Abrir reportes →";
+  const cta = primary ? "Abrir →" : warning ? "Ver inactivos →" : "Abrir reportes →";
   return (
     <Link href={href} className={`rounded-xl border border-white/10 p-5 transition block ${cls}`}>
       <div className="text-lg font-semibold">{title}</div>

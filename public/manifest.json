@@ -2,7 +2,7 @@
   "name": "MEUOJEC APP",
   "short_name": "MEUOJEC",
   "description": "Sistema de gestión integral para la iglesia MEUOJEC",
-  "start_url": "/dashboard",
+  "start_url": "/movil",
   "display": "standalone",
   "background_color": "#0b0b0b",
   "theme_color": "#0b0b0b",
@@ -21,9 +21,21 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [],
-  "categories": [
-    "productivity",
-    "utilities"
-  ]
+  "shortcuts": [
+    {
+      "name": "Tomar asistencia",
+      "short_name": "Asistencia",
+      "description": "Escanear QR o buscar miembro para registrar asistencia",
+      "url": "/movil/asistencia",
+      "icons": [{ "src": "/logo-iglesia.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Panel",
+      "description": "Panel de administración completo",
+      "url": "/dashboard",
+      "icons": [{ "src": "/logo-iglesia.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["productivity", "utilities"]
 }
