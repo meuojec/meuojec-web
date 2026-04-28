@@ -1,119 +1,107 @@
+// app/dashboard/asistencias/reporte/page.tsx
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import DeleteClientWrapper from "./_components/DeleteClientWrapper";
-import BackButton from "@/app/components/BackButton";
+import { getAsistenciasData, getEventosDeds } from "./actions";
+import FiltrosAsistencias from "./FiltrosAsistencias";
+import AsistenciasCharts from "./AsistenciasCharts";
+import TablaAsistencias from "./TablaAsistencias";
 
-function toHHMM(h?: string | null) {
-  if (!h) return null;
-  return h.length >= 5 ? h.slice(0, 5) : h;
+function todayISO() {
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Santiago" }).format(new Date());
 }
 
-function fmtFecha(f?: string | null) {
-  if (!f) return "—";
-  // si viene como "2026-02-19T..." corta
-  return f.length >= 10 ? f.slice(0, 10) : f;
+function monthStartISO() {
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Santiago" }));
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 }
 
-export type RegistroRow = {
-  id: string; // usamos created_at como id (mientras no tengas uuid)
-  rut: string;
-  nombre: string;
-  ded: string | null;
-  sexo: string | null;
-  hora: string | null;
-  fecha: string | null;
-  id_evento: string | null;
-  evento_nombre: string | null;
-};
+function Kpi({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+      <div className="text-xs text-white/40 mb-1">{label}</div>
+      <div className={`text-3xl font-bold ${color ?? "text-white"}`}>{value}</div>
+      {sub && <div className="text-xs text-white/30 mt-1">{sub}</div>}
+    </div>
+  );
+}
 
-export default async function ReporteAsistenciasPage() {
+export default async function ReporteAsistenciasPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data, error } = await supabase
-    .from("asistencias")
-    .select(
-      `
-      rut,
-      fecha,
-      hora,
-      ded,
-      id_evento,
-      created_at,
-      miembros (
-        nombres,
-        apellidos,
-        sexo,
-        ded
-      )
-    `
-    )
-    .order("created_at", { ascending: false })
-    .limit(500);
+  const sp = (await searchParams) ?? {};
+  const getString = (k: string) => { const v = sp[k]; return typeof v === "string" ? v.trim() : ""; };
 
-  if (error) {
-    return (
-      <div className="p-6 text-white">
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
-          <div className="font-semibold">Error cargando asistencias</div>
-          <div className="text-sm text-white/70 mt-1">{error.message}</div>
-        </div>
-      </div>
-    );
-  }
+  const today = todayISO();
+  const from = getString("from") || monthStartISO();
+  const to = getString("to") || today;
+  const q = getString("q");
+  const ded = getString("ded");
+  const evento = getString("evento");
 
-  // Traemos nombres de eventos en 1 query (opcional)
-  const eventosIds = Array.from(
-    new Set((data ?? []).map((r: any) => r.id_evento).filter(Boolean))
-  ) as string[];
+  const [data, { eventos, deds }] = await Promise.all([
+    getAsistenciasData({ from, to, q, ded, evento }),
+    getEventosDeds(),
+  ]);
 
-  const eventosMap = new Map<string, string>();
-  if (eventosIds.length > 0) {
-    const { data: evs } = await supabase
-      .from("eventos")
-      .select("id_evento,nombre")
-      .in("id_evento", eventosIds);
-
-    (evs ?? []).forEach((e: any) => {
-      if (e?.id_evento) eventosMap.set(String(e.id_evento), e?.nombre ?? "");
-    });
-  }
-
-  const rows: RegistroRow[] = (data ?? []).map((r: any) => {
-    const m = r.miembros;
-    const nombre = m
-      ? `${m.nombres ?? ""} ${m.apellidos ?? ""}`.trim() || "—"
-      : "—";
-
-    const idEvento = r.id_evento ? String(r.id_evento) : null;
-
-    return {
-      id: String(r.created_at), // id UI = created_at
-      rut: String(r.rut ?? ""),
-      nombre,
-      ded: (r.ded ?? m?.ded ?? null) as string | null,
-      sexo: (m?.sexo ?? null) as string | null,
-      hora: toHHMM(r.hora),
-      fecha: r.fecha ? String(r.fecha) : null,
-      id_evento: idEvento,
-      evento_nombre: idEvento ? eventosMap.get(idEvento) ?? null : null,
-    };
-  });
+  const { kpis, trendDay, topDed, rows } = data;
 
   return (
-    <div className="p-6">
-      <div className="flex min-h-[calc(100vh-140px)] flex-col gap-6">
-        <div className="min-h-0 flex-1">
-          <DeleteClientWrapper rows={rows} />
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Link
+            href="/dashboard/asistencias"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 hover:bg-white/10 mb-3"
+          >
+            ← Asistencias
+          </Link>
+          <h1 className="text-2xl font-bold text-white">Reporte de asistencias</h1>
+          <p className="mt-1 text-sm text-white/50">
+            Período: <span className="text-white/80">{from}</span> → <span className="text-white/80">{to}</span>
+          </p>
         </div>
+        <Link
+          href="/dashboard/asistencias/escanear"
+          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/15"
+        >
+          ← Ir al escáner
+        </Link>
       </div>
+
+      <Suspense fallback={null}>
+        <FiltrosAsistencias eventos={eventos} deds={deds} total={kpis.total} exportBase="/api/asistencias/export" />
+      </Suspense>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <Kpi label="Registros" value={kpis.total} />
+        <Kpi label="Únicos (RUT)" value={kpis.unicos} sub="personas distintas" />
+        <Kpi label="Nuevos" value={kpis.nuevos} sub="1ª vez histórica" color="text-green-400" />
+        <Kpi label="Recurrentes" value={kpis.recurrentes} color="text-blue-400" />
+        <Kpi label="Hombres" value={kpis.hombres} color="text-sky-300" />
+        <Kpi label="Mujeres" value={kpis.mujeres} color="text-pink-300" />
+        <Kpi label="Sin clasificar" value={kpis.sinSexo} color="text-white/40" />
+      </div>
+
+      <AsistenciasCharts
+        trendDay={trendDay}
+        topDed={topDed}
+        hombres={kpis.hombres}
+        mujeres={kpis.mujeres}
+        sinSexo={kpis.sinSexo}
+      />
+
+      <TablaAsistencias rows={rows} />
     </div>
   );
 }
