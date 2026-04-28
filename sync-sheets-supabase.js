@@ -99,7 +99,7 @@ function sincronizarMiembros() {
       // 3) Upsert en Supabase
       upsertMiembro(payload);
 
-      Logger.log("✅ Fila " + (i + 2) + " — " + rut + " — OK");
+      Logger.log("✅ Fila " + (i + 2) + " — " + rut + " — OK (nuevo o ya existía)");
       ok++;
 
     } catch (e) {
@@ -256,12 +256,14 @@ function construirPayload(row, rut, foto_path, foto_url) {
   if (foto_path) payload.foto_path = foto_path;
   if (foto_url)  payload.foto_url  = foto_url;
 
-  // Limpiar nulls opcionales para no sobreescribir datos existentes con null
+  // No sobreescribir con null: si el Sheet tiene vacío un campo,
+  // se respeta el valor que ya existe en Supabase (ej. ingresado por la web).
+  // Solo se envían los campos que tienen valor real desde el Sheet.
+  var CAMPOS_OBLIGATORIOS = { rut: true, nombres: true, apellidos: true,
+                               fecha_nacimiento: true, estado_membresia: true };
   Object.keys(payload).forEach(function(k) {
-    if (payload[k] === null && k !== "rut" && k !== "nombres" && k !== "apellidos") {
-      // Se puede dejar null para sobreescribir, o borrar la clave para no tocar el campo existente.
-      // Por defecto: SE SOBREESCRIBE (upsert completo). Comenta la línea de abajo para no tocar campos vacíos:
-      // delete payload[k];
+    if (payload[k] === null && !CAMPOS_OBLIGATORIOS[k]) {
+      delete payload[k];
     }
   });
 
@@ -281,7 +283,7 @@ function upsertMiembro(payload) {
       "apikey":          CONFIG.SUPABASE_KEY,
       "Authorization":   "Bearer " + CONFIG.SUPABASE_KEY,
       "Content-Type":    "application/json",
-      "Prefer":          "resolution=merge-duplicates",  // upsert por RUT
+      "Prefer":          "resolution=ignore-duplicates",  // INSERT solo si no existe, nunca sobreescribe
     },
   });
 
