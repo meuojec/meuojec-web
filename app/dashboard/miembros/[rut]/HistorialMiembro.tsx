@@ -114,6 +114,7 @@ export default async function HistorialMiembro({ rut }: { rut: string }) {
               year: "numeric",
               hour: "2-digit",
               minute: "2-digit",
+              timeZone: "America/Santiago",
             });
 
             const camposVisibles = (row.campos_mod ?? []).filter(
