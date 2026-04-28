@@ -126,6 +126,10 @@ export default async function DashboardPage() {
 
   const cumples = (cumplesData ?? []) as CumpleItem[];
 
+  // Cumpleaños de hoy (filtrar por día actual en zona CL)
+  const todayDay = parseInt(todayISO().slice(8, 10), 10);
+  const cumpleaHoy = cumples.filter((x) => x.dia === todayDay);
+
   // 3) Evento en curso
   const { data: eventoData, error: eventoErr } = await supabase
     .from("eventos")
@@ -249,6 +253,17 @@ export default async function DashboardPage() {
         <ProximasActividadesKpi title="Próximas actividades" icon={CalendarRange} items={proximasActividades} href="/dashboard/agenda" />
       </div>
 
+      {/* Banner cumpleaños de hoy */}
+      {cumpleaHoy.length > 0 && (
+        <TodayBirthdayBanner
+          items={cumpleaHoy.map((x) => ({
+            id: x.rut,
+            name: [x.nombres, x.apellidos].filter(Boolean).join(" ").trim() || x.rut,
+            photoUrl: x.foto_url || null,
+          }))}
+        />
+      )}
+
       {/* Gráficos de tendencia */}
       <DashboardCharts
         asistenciaTrend={asistenciaTrend}
@@ -259,10 +274,11 @@ export default async function DashboardPage() {
       <BirthdaysGridCard
         title="Cumpleaños del mes"
         icon={CalendarDays}
+        todayDay={todayDay}
         errorText={cumplesErr ? `No se pudieron cargar los cumpleaños: ${cumplesErr.message}` : undefined}
         items={cumples.map((x) => {
           const name = [x.nombres, x.apellidos].filter(Boolean).join(" ").trim() || x.rut;
-          return { id: x.rut, name, dateLabel: fmtDayMonthCL(x.fecha_nacimiento), photoUrl: x.foto_url || null };
+          return { id: x.rut, name, dateLabel: fmtDayMonthCL(x.fecha_nacimiento), photoUrl: x.foto_url || null, dia: x.dia };
         })}
       />
 
@@ -502,8 +518,58 @@ function SmallInfoCard({ title, icon: Icon, lines }: {
   );
 }
 
-function BirthdaysGridCard({ title, icon: Icon, items, errorText }: {
-  title: string; icon?: LucideIcon; items: { id: string; name: string; dateLabel: string; photoUrl?: string | null }[]; errorText?: string;
+function TodayBirthdayBanner({ items }: { items: { id: string; name: string; photoUrl: string | null }[] }) {
+  const plural = items.length !== 1;
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent p-5">
+      {/* Decorativo */}
+      <div className="pointer-events-none absolute -right-6 -top-6 text-7xl opacity-10 select-none">🎂</div>
+
+      <div className="flex flex-wrap items-center gap-4">
+        {/* Texto */}
+        <div className="flex-1 min-w-[160px]">
+          <p className="text-xs font-semibold uppercase tracking-widest text-yellow-400/80 mb-1">🎂 Hoy</p>
+          <p className="text-base font-bold text-white">
+            {plural
+              ? `${items.length} personas cumplen años hoy`
+              : `${items[0].name} cumple años hoy`}
+          </p>
+          {plural && (
+            <p className="mt-0.5 text-sm text-white/50">{items.map((i) => i.name).join(", ")}</p>
+          )}
+        </div>
+
+        {/* Avatares */}
+        <div className="flex -space-x-3">
+          {items.slice(0, 6).map((it) => (
+            <Link
+              key={it.id}
+              href={`/dashboard/miembros/${encodeURIComponent(it.id)}`}
+              title={it.name}
+              className="relative h-11 w-11 overflow-hidden rounded-full border-2 border-yellow-500/50 bg-white/10 hover:z-10 hover:scale-110 transition-transform"
+            >
+              {it.photoUrl ? (
+                <Image src={it.photoUrl} alt={it.name} fill sizes="44px" className="object-cover" />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-yellow-300">
+                  {it.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </Link>
+          ))}
+          {items.length > 6 && (
+            <div className="relative h-11 w-11 overflow-hidden rounded-full border-2 border-yellow-500/30 bg-white/10 flex items-center justify-center text-xs font-semibold text-white/60">
+              +{items.length - 6}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BirthdaysGridCard({ title, icon: Icon, items, errorText, todayDay }: {
+  title: string; icon?: LucideIcon; items: { id: string; name: string; dateLabel: string; photoUrl?: string | null; dia?: number | null }[]; errorText?: string; todayDay?: number;
 }) {
   return (
     <CardShell>
@@ -518,23 +584,34 @@ function BirthdaysGridCard({ title, icon: Icon, items, errorText }: {
           <div className="text-sm text-white/50">No hay cumpleaños este mes.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-            {items.map((it) => (
-              <div key={it.id} className="group rounded-xl border border-white/10 bg-white/[0.10] p-6 hover:bg-white/[0.06] transition">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border border-white/20 bg-white/5">
-                    {it.photoUrl ? (
-                      <Image src={it.photoUrl} alt={it.name} fill sizes="56px" className="object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-xs text-white/60">—</div>
-                    )}
+            {items.map((it) => {
+              const isToday = todayDay !== undefined && it.dia === todayDay;
+              return (
+                <Link
+                  key={it.id}
+                  href={`/dashboard/miembros/${encodeURIComponent(it.id)}`}
+                  className={`group rounded-xl border p-4 transition hover:bg-white/[0.06] ${isToday ? "border-yellow-500/50 bg-yellow-500/10" : "border-white/10 bg-white/[0.04]"}`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className={`relative h-12 w-12 shrink-0 overflow-hidden rounded-full border bg-white/5 ${isToday ? "border-yellow-500/50" : "border-white/20"}`}>
+                      {it.photoUrl ? (
+                        <Image src={it.photoUrl} alt={it.name} fill sizes="48px" className="object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white/50">
+                          {it.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-white truncate leading-tight">{it.name}</div>
+                      <div className={`text-xs mt-0.5 ${isToday ? "text-yellow-400 font-medium" : "text-white/50"}`}>
+                        {isToday ? "🎂 Hoy" : it.dateLabel}
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-base font-semibold text-white truncate leading-tight">{it.name}</div>
-                    <div className="text-sm text-white/60 mt-1">{it.dateLabel}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
