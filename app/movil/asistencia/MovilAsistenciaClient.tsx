@@ -34,9 +34,26 @@ function beep(type: "ok" | "warn" | "err") {
   } catch {}
 }
 
-type Resultado = { ok: boolean; code: string; message: string | null; nombres?: string | null; apellidos?: string | null };
-type ActiveEventApi = { evento: { id: string; nombre: string | null } | null; sesion: { id: string } | null };
-type MiembroMatch = { rut: string; nombres: string | null; apellidos: string | null };
+/* ─── tipos ─── */
+type RpcResult = {
+  ok: boolean;
+  code: string;
+  message: string | null;
+  nombres?: string | null;
+  apellidos?: string | null;
+};
+
+type RegistrarResult = { tipo: "ok" | "ya" | "err"; nombre: string };
+
+type FeedbackQR = { tipo: "ok" | "ya" | "err" | "idle"; titulo: string; sub: string };
+type Toast = { msg: string; tipo: "ok" | "warn" | "err" } | null;
+
+type ActiveEventApi = {
+  evento: { id: string; nombre: string | null } | null;
+  sesion: { id: string } | null;
+};
+
+type MiembroMatch = { rut: string; nombres: string | null; apellidos: string | null; _done?: boolean };
 
 /* ─── component ─── */
 export default function MovilAsistenciaClient() {
@@ -53,10 +70,14 @@ export default function MovilAsistenciaClient() {
   const [eventoNombre, setEventoNombre] = useState<string | null>(null);
   const [eventoSesionId, setEventoSesionId] = useState<string | null>(null);
 
-  // QR feedback
-  const [feedback, setFeedback] = useState<{ tipo: "ok" | "ya" | "err" | "idle"; titulo: string; sub: string }>({
+  // Feedback del escáner QR (ocupa toda la pantalla bajo el visor)
+  const [feedbackQR, setFeedbackQR] = useState<FeedbackQR>({
     tipo: "idle", titulo: "Listo", sub: "Apunta la cámara al QR del carnet",
   });
+
+  // Toast para modo búsqueda (no bloquea la lista)
+  const [toast, setToast] = useState<Toast>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Búsqueda manual
   const [query, setQuery] = useState("");
@@ -86,7 +107,7 @@ export default function MovilAsistenciaClient() {
 
   useEffect(() => { refreshEvento(); }, [refreshEvento]);
 
-  /* ── contador ── */
+  /* ── contador realtime ── */
   useEffect(() => {
     const today = todayISO_CL();
     let cancelled = false;
@@ -99,7 +120,8 @@ export default function MovilAsistenciaClient() {
     };
     load();
 
-    const ch = supabase.channel(`movil-count-${eventoSesionId ?? "none"}-${today}`)
+    const ch = supabase
+      .channel(`movil-count-${eventoSesionId ?? "none"}-${today}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "asistencias" }, (payload) => {
         const row: any = payload.new;
         if ((row?.fecha ?? "").slice(0, 10) !== today) return;
@@ -111,11 +133,11 @@ export default function MovilAsistenciaClient() {
     return () => { cancelled = true; supabase.removeChannel(ch); };
   }, [eventoSesionId, supabase]);
 
-  /* ── registrar RUT ── */
-  const registrarRut = useCallback(async (rutRaw: string): Promise<"ok" | "ya" | "err"> => {
+  /* ── registrar RUT — devuelve nombre real del RPC ── */
+  const registrarRut = useCallback(async (rutRaw: string): Promise<RegistrarResult> => {
     const rut = normalizeRut(rutRaw);
-    if (!rut) return "err";
-    if (busyRef.current) return "err";
+    if (!rut) return { tipo: "err", nombre: rutRaw };
+    if (busyRef.current) return { tipo: "err", nombre: rut };
     busyRef.current = true;
 
     try {
@@ -123,13 +145,31 @@ export default function MovilAsistenciaClient() {
         p_rut: rut,
         p_evento_sesion_id: eventoSesionId ?? null,
       });
-      if (error) return "err";
-      const res = data as Resultado | null;
-      if (!res?.ok) return "err";
-      return String(res.code).toUpperCase() === "ALREADY" ? "ya" : "ok";
-    } catch { return "err"; }
-    finally { setTimeout(() => { busyRef.current = false; }, 600); }
+
+      if (error) return { tipo: "err", nombre: rut };
+
+      const res = data as RpcResult | null;
+      // Nombre real devuelto por el RPC (o fallback al RUT)
+      const nombre = res
+        ? [res.nombres, res.apellidos].filter(Boolean).join(" ").trim() || rut
+        : rut;
+
+      if (!res?.ok) return { tipo: "err", nombre };
+      const tipo = String(res.code).toUpperCase() === "ALREADY" ? "ya" : "ok";
+      return { tipo, nombre };
+    } catch {
+      return { tipo: "err", nombre: rut };
+    } finally {
+      setTimeout(() => { busyRef.current = false; }, 600);
+    }
   }, [supabase, eventoSesionId]);
+
+  /* ── mostrar toast (modo búsqueda) ── */
+  const showToast = useCallback((t: Toast) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast(t);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3000);
+  }, []);
 
   /* ── escáner QR ── */
   useEffect(() => {
@@ -141,6 +181,7 @@ export default function MovilAsistenciaClient() {
       if (cancelled) return;
       const { Html5Qrcode } = mod;
       if (!qrRef.current) qrRef.current = new Html5Qrcode(qrDivId);
+
       try {
         await qrRef.current.start(
           { facingMode: "environment" },
@@ -150,28 +191,28 @@ export default function MovilAsistenciaClient() {
             if (!rut || rut === lastRutRef.current) return;
             lastRutRef.current = rut;
 
-            const result = await registrarRut(rut);
-            const nombre = rut;
+            const { tipo, nombre } = await registrarRut(rut);
 
-            if (result === "ok") {
+            if (tipo === "ok") {
               beep("ok");
-              setFeedback({ tipo: "ok", titulo: "✅ Registrado", sub: nombre });
-            } else if (result === "ya") {
+              setFeedbackQR({ tipo: "ok", titulo: "Asistencia registrada", sub: nombre });
+            } else if (tipo === "ya") {
               beep("warn");
-              setFeedback({ tipo: "ya", titulo: "Ya registrado", sub: nombre });
+              setFeedbackQR({ tipo: "ya", titulo: "Ya estaba registrado", sub: nombre });
             } else {
               beep("err");
-              setFeedback({ tipo: "err", titulo: "No encontrado", sub: rut });
+              setFeedbackQR({ tipo: "err", titulo: "No encontrado", sub: rut });
             }
+
             setTimeout(() => {
-              setFeedback({ tipo: "idle", titulo: "Listo", sub: "Apunta la cámara al QR del carnet" });
+              setFeedbackQR({ tipo: "idle", titulo: "Listo", sub: "Apunta la cámara al QR del carnet" });
               lastRutRef.current = "";
-            }, 2000);
+            }, 2500);
           },
           () => {}
         );
       } catch {
-        setFeedback({ tipo: "err", titulo: "Sin cámara", sub: "Permite el acceso a la cámara o usa HTTPS" });
+        setFeedbackQR({ tipo: "err", titulo: "Sin cámara", sub: "Permite el acceso a la cámara o usa HTTPS" });
       }
     };
 
@@ -205,28 +246,40 @@ export default function MovilAsistenciaClient() {
     }, 300);
   }, [supabase]);
 
+  /* ── registrar desde lista manual ── */
   const registrarManual = useCallback(async (m: MiembroMatch) => {
     setRegistrando(m.rut);
-    const result = await registrarRut(m.rut);
-    const nombre = [m.nombres, m.apellidos].filter(Boolean).join(" ").trim();
-    if (result === "ok") {
+    const { tipo, nombre } = await registrarRut(m.rut);
+
+    if (tipo === "ok") {
       beep("ok");
-      setResultados(prev => prev.map(r => r.rut === m.rut ? { ...r, _done: true } as any : r));
-    } else if (result === "ya") {
+      setResultados(prev => prev.map(r => r.rut === m.rut ? { ...r, _done: true } : r));
+      showToast({ msg: `Asistencia registrada — ${nombre}`, tipo: "ok" });
+    } else if (tipo === "ya") {
       beep("warn");
-      alert(`${nombre} ya está registrado.`);
+      showToast({ msg: `${nombre} ya estaba registrado`, tipo: "warn" });
     } else {
       beep("err");
-      alert(`No se pudo registrar a ${nombre}.`);
+      showToast({ msg: `No se pudo registrar a ${nombre}`, tipo: "err" });
     }
     setRegistrando(null);
-  }, [registrarRut]);
+  }, [registrarRut, showToast]);
 
-  /* ── estilos de feedback ── */
-  const feedbackBg = feedback.tipo === "ok" ? "bg-emerald-600/90" : feedback.tipo === "ya" ? "bg-amber-600/90" : feedback.tipo === "err" ? "bg-red-700/90" : "bg-black/40";
+  /* ─── estilos de feedback QR ─── */
+  const feedbackBg =
+    feedbackQR.tipo === "ok"  ? "bg-emerald-600/90" :
+    feedbackQR.tipo === "ya"  ? "bg-amber-600/90"   :
+    feedbackQR.tipo === "err" ? "bg-red-700/90"      :
+    "bg-black/40";
+
+  const toastBg =
+    toast?.tipo === "ok"   ? "bg-emerald-600" :
+    toast?.tipo === "warn" ? "bg-amber-600"   :
+    "bg-red-700";
 
   return (
     <div className="flex flex-col h-screen overflow-hidden select-none">
+
       {/* TopBar */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/10 bg-black/40 shrink-0">
         <a href="/movil" className="flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 hover:bg-white/5">
@@ -241,7 +294,10 @@ export default function MovilAsistenciaClient() {
         <div className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5">
           <span className="text-xs font-bold text-emerald-300">{count}</span>
         </div>
-        <button onClick={refreshEvento} className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 hover:bg-white/5">
+        <button
+          onClick={refreshEvento}
+          className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 hover:bg-white/5"
+        >
           <RefreshCw className="h-3.5 w-3.5 text-white/50" />
         </button>
       </div>
@@ -262,22 +318,32 @@ export default function MovilAsistenciaClient() {
         </button>
       </div>
 
-      {/* Contenido */}
-      {modo === "qr" ? (
+      {/* ── Tab QR ── */}
+      {modo === "qr" && (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Feedback */}
-          <div className={`${feedbackBg} px-4 py-3 text-center transition-colors duration-150 shrink-0`}>
-            <div className="text-lg font-bold">{feedback.titulo}</div>
-            <div className="text-sm text-white/80">{feedback.sub}</div>
+          {/* Feedback con nombre */}
+          <div className={`${feedbackBg} px-4 py-3 text-center transition-colors duration-200 shrink-0`}>
+            <div className="text-lg font-bold leading-tight">{feedbackQR.titulo}</div>
+            <div className="text-sm text-white/90 mt-0.5 leading-snug">{feedbackQR.sub}</div>
           </div>
-
-          {/* Cámara */}
+          {/* Visor cámara */}
           <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
             <div id={qrDivId} className="w-full" style={{ maxWidth: 420 }} />
           </div>
         </div>
-      ) : (
+      )}
+
+      {/* ── Tab Búsqueda ── */}
+      {modo === "buscar" && (
         <div className="flex-1 flex flex-col overflow-hidden">
+
+          {/* Toast in-app — reemplaza alert() */}
+          {toast && (
+            <div className={`${toastBg} px-4 py-3 text-center text-sm font-semibold shrink-0 transition-all`}>
+              {toast.msg}
+            </div>
+          )}
+
           {/* Buscador */}
           <div className="px-3 pt-3 pb-2 shrink-0">
             <input
@@ -296,11 +362,13 @@ export default function MovilAsistenciaClient() {
               <div className="text-center text-white/40 py-6 text-sm">Buscando…</div>
             )}
             {!buscando && query.length >= 2 && resultados.length === 0 && (
-              <div className="text-center text-white/40 py-6 text-sm">Sin resultados para "{query}"</div>
+              <div className="text-center text-white/40 py-6 text-sm">
+                Sin resultados para &ldquo;{query}&rdquo;
+              </div>
             )}
             {resultados.map((m) => {
               const nombre = [m.nombres, m.apellidos].filter(Boolean).join(" ").trim() || m.rut;
-              const done = (m as any)._done;
+              const done = !!m._done;
               return (
                 <button
                   key={m.rut}
@@ -314,16 +382,18 @@ export default function MovilAsistenciaClient() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className={`font-semibold truncate ${done ? "text-emerald-300" : "text-white"}`}>
-                      {done ? "✅ " : ""}{nombre}
+                      {nombre}
                     </div>
                     <div className="text-xs text-white/40 mt-0.5">{m.rut}</div>
                   </div>
                   {registrando === m.rut ? (
-                    <span className="text-xs text-white/50">Registrando…</span>
+                    <span className="text-xs text-white/50 shrink-0">Registrando…</span>
                   ) : done ? (
-                    <span className="text-xs text-emerald-400">Registrado</span>
+                    <span className="text-xs text-emerald-400 shrink-0">Registrado</span>
                   ) : (
-                    <span className="text-xs text-white/30 border border-white/10 rounded-full px-2.5 py-0.5">Marcar</span>
+                    <span className="text-xs text-white/30 border border-white/10 rounded-full px-2.5 py-0.5 shrink-0">
+                      Marcar
+                    </span>
                   )}
                 </button>
               );
@@ -331,6 +401,7 @@ export default function MovilAsistenciaClient() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
