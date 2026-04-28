@@ -9,7 +9,7 @@ var CONFIG = {
   SHEET_ID:       "1rsacpWEar7V1MUq0zC90pA1qecRrW-oEmgCjXbhYzAg",
   SHEET_NAME:     "Hoja1",                  // <-- cambia si tu hoja tiene otro nombre
   SUPABASE_URL:   "https://mhewguufhtdinryeukbe.supabase.co",
-  SUPABASE_KEY:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZXdndXVmaHRkaW5yeWV1a2JlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDg0NTQ5MiwiZXhwIjoyMDg2NDIxNDkyfQ.JR4hL1wDdRT7yAeSPy89k5neEzxMtSgjWi1EK3RWQhU",
+  SUPABASE_KEY:   "TU_SUPABASE_SERVICE_ROLE_KEY_AQUI",
   BUCKET:         "fotos-identidad",
   TABLE:          "miembros",
 
