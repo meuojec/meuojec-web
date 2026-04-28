@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import MemberForm, { type MemberRow } from "@/app/components/MemberForm";
 import BackButton from "@/app/components/BackButton";
+import HistorialMiembro from "./HistorialMiembro";
 
 type PageProps = {
   params: Promise<{ rut: string }>;
@@ -100,6 +101,9 @@ export default async function Page({ params, searchParams }: PageProps) {
         initialData={miembro}
         initialFotoUrl={initialFotoUrl}
       />
+
+      {/* Historial de cambios — solo visible en modo detalle */}
+      {!isEdit && <HistorialMiembro rut={rutDecoded} />}
     </div>
   );
 }

@@ -50,6 +50,7 @@ export default function MembersTableClient(props: {
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [exportFormat, setExportFormat] = useState<"xlsx" | "csv" | "pdf">("xlsx");
 
   const selectedRuts = useMemo(
     () => Object.keys(selected).filter((k) => selected[k]),
@@ -74,13 +75,12 @@ export default function MembersTableClient(props: {
 
   function exportSelected() {
     if (selectedRuts.length === 0) return;
-    const url = `/api/miembros/export?format=xlsx&ruts=${encodeURIComponent(selectedRuts.join(","))}`;
+    const url = `/api/miembros/export?format=${exportFormat}&ruts=${encodeURIComponent(selectedRuts.join(","))}`;
     window.location.href = url;
   }
 
   function exportFilteredAll() {
-    // Exporta TODO lo filtrado (ignora paginación)
-    const url = `/api/miembros/export?format=xlsx&` + new URLSearchParams({
+    const url = `/api/miembros/export?format=${exportFormat}&` + new URLSearchParams({
       q: props.q || "",
       ded: props.ded || "",
       sexo: props.sexo || "",
@@ -132,6 +132,20 @@ export default function MembersTableClient(props: {
 
           <div className="w-px h-6 bg-white/10 mx-1" />
 
+          {/* Selector de formato de exportación */}
+          <select
+            value={exportFormat}
+            onChange={(e) => setExportFormat(e.target.value as "xlsx" | "csv" | "pdf")}
+            className="rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-white/80 cursor-pointer"
+            title="Formato de exportación"
+          >
+            <option value="xlsx">Excel (.xlsx)</option>
+            <option value="csv">CSV</option>
+            <option value="pdf">PDF</option>
+          </select>
+
+          <div className="w-px h-6 bg-white/10 mx-1" />
+
           <button
             type="button"
             onClick={toggleAllOnPage}
@@ -163,7 +177,7 @@ export default function MembersTableClient(props: {
                 : "bg-white/10 text-white hover:bg-white/15",
             ].join(" ")}
           >
-            Exportar seleccionados (.xlsx)
+            Exportar seleccionados
           </button>
 
           <button
@@ -171,7 +185,7 @@ export default function MembersTableClient(props: {
             onClick={exportFilteredAll}
             className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white hover:bg-white/10"
           >
-            Exportar filtrado (.xlsx)
+            Exportar filtrado
           </button>
         </div>
       </div>
