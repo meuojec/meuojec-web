@@ -36,23 +36,13 @@ function beep(type: "ok" | "warn" | "err") {
 
 /* ─── tipos ─── */
 type RpcResult = {
-  ok: boolean;
-  code: string;
-  message: string | null;
-  nombres?: string | null;
-  apellidos?: string | null;
+  ok: boolean; code: string; message: string | null;
+  nombres?: string | null; apellidos?: string | null;
 };
-
 type RegistrarResult = { tipo: "ok" | "ya" | "err"; nombre: string };
-
 type FeedbackQR = { tipo: "ok" | "ya" | "err" | "idle"; titulo: string; sub: string };
 type Toast = { msg: string; tipo: "ok" | "warn" | "err" } | null;
-
-type ActiveEventApi = {
-  evento: { id: string; nombre: string | null } | null;
-  sesion: { id: string } | null;
-};
-
+type ActiveEventApi = { evento: { id: string; nombre: string | null } | null; sesion: { id: string } | null };
 type MiembroMatch = { rut: string; nombres: string | null; apellidos: string | null; _done?: boolean };
 
 /* ─── component ─── */
@@ -66,20 +56,16 @@ export default function MovilAsistenciaClient() {
   const [modo, setModo] = useState<"qr" | "buscar">("qr");
   const [now, setNow] = useState(new Date());
   const [count, setCount] = useState(0);
-
   const [eventoNombre, setEventoNombre] = useState<string | null>(null);
   const [eventoSesionId, setEventoSesionId] = useState<string | null>(null);
 
-  // Feedback del escáner QR (ocupa toda la pantalla bajo el visor)
   const [feedbackQR, setFeedbackQR] = useState<FeedbackQR>({
     tipo: "idle", titulo: "Listo", sub: "Apunta la cámara al QR del carnet",
   });
 
-  // Toast para modo búsqueda (no bloquea la lista)
   const [toast, setToast] = useState<Toast>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Búsqueda manual
   const [query, setQuery] = useState("");
   const [resultados, setResultados] = useState<MiembroMatch[]>([]);
   const [buscando, setBuscando] = useState(false);
@@ -146,10 +132,15 @@ export default function MovilAsistenciaClient() {
         p_evento_sesion_id: eventoSesionId ?? null,
       });
 
-      if (error) return { tipo: "err", nombre: rut };
+      if (error) {
+        // La constraint de unicidad llega a veces como error de Supabase en vez de código ALREADY
+        const isDuplicate =
+          error.message?.toLowerCase().includes("duplicate") ||
+          error.message?.toLowerCase().includes("unique constraint");
+        return { tipo: isDuplicate ? "ya" : "err", nombre: rut };
+      }
 
       const res = data as RpcResult | null;
-      // Nombre real devuelto por el RPC (o fallback al RUT)
       const nombre = res
         ? [res.nombres, res.apellidos].filter(Boolean).join(" ").trim() || rut
         : rut;
@@ -164,7 +155,7 @@ export default function MovilAsistenciaClient() {
     }
   }, [supabase, eventoSesionId]);
 
-  /* ── mostrar toast (modo búsqueda) ── */
+  /* ── toast helper ── */
   const showToast = useCallback((t: Toast) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast(t);
@@ -201,7 +192,7 @@ export default function MovilAsistenciaClient() {
               setFeedbackQR({ tipo: "ya", titulo: "Ya estaba registrado", sub: nombre });
             } else {
               beep("err");
-              setFeedbackQR({ tipo: "err", titulo: "No encontrado", sub: rut });
+              setFeedbackQR({ tipo: "err", titulo: "No registrado en la APP", sub: rut });
             }
 
             setTimeout(() => {
@@ -232,7 +223,6 @@ export default function MovilAsistenciaClient() {
     setQuery(q);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     if (q.trim().length < 2) { setResultados([]); return; }
-
     searchTimeoutRef.current = setTimeout(async () => {
       setBuscando(true);
       const { data } = await supabase
@@ -260,12 +250,12 @@ export default function MovilAsistenciaClient() {
       showToast({ msg: `${nombre} ya estaba registrado`, tipo: "warn" });
     } else {
       beep("err");
-      showToast({ msg: `No se pudo registrar a ${nombre}`, tipo: "err" });
+      showToast({ msg: `${nombre} — no registrado en la APP`, tipo: "err" });
     }
     setRegistrando(null);
   }, [registrarRut, showToast]);
 
-  /* ─── estilos de feedback QR ─── */
+  /* ── estilos ── */
   const feedbackBg =
     feedbackQR.tipo === "ok"  ? "bg-emerald-600/90" :
     feedbackQR.tipo === "ya"  ? "bg-amber-600/90"   :
@@ -321,12 +311,10 @@ export default function MovilAsistenciaClient() {
       {/* ── Tab QR ── */}
       {modo === "qr" && (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Feedback con nombre */}
           <div className={`${feedbackBg} px-4 py-3 text-center transition-colors duration-200 shrink-0`}>
             <div className="text-lg font-bold leading-tight">{feedbackQR.titulo}</div>
             <div className="text-sm text-white/90 mt-0.5 leading-snug">{feedbackQR.sub}</div>
           </div>
-          {/* Visor cámara */}
           <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
             <div id={qrDivId} className="w-full" style={{ maxWidth: 420 }} />
           </div>
@@ -336,15 +324,11 @@ export default function MovilAsistenciaClient() {
       {/* ── Tab Búsqueda ── */}
       {modo === "buscar" && (
         <div className="flex-1 flex flex-col overflow-hidden">
-
-          {/* Toast in-app — reemplaza alert() */}
           {toast && (
             <div className={`${toastBg} px-4 py-3 text-center text-sm font-semibold shrink-0 transition-all`}>
               {toast.msg}
             </div>
           )}
-
-          {/* Buscador */}
           <div className="px-3 pt-3 pb-2 shrink-0">
             <input
               type="search"
@@ -355,8 +339,6 @@ export default function MovilAsistenciaClient() {
               className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base outline-none focus:border-white/30"
             />
           </div>
-
-          {/* Resultados */}
           <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-2">
             {buscando && (
               <div className="text-center text-white/40 py-6 text-sm">Buscando…</div>
