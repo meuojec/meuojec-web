@@ -2,9 +2,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import MemberForm, { type MemberRow } from "@/app/components/MemberForm";
-import BackButton from "@/app/components/BackButton";
 import HistorialMiembro from "./HistorialMiembro";
 import AsistenciasMiembro from "./AsistenciasMiembro";
+import PastoralMiembro from "./PastoralMiembro";
 
 type PageProps = {
   params: Promise<{ rut: string }>;
@@ -112,6 +112,9 @@ export default async function Page({ params, searchParams }: PageProps) {
 
       {/* Asistencias */}
       {!isEdit && <AsistenciasMiembro rut={rutDecoded} />}
+
+      {/* Seguimiento Pastoral */}
+      {!isEdit && <PastoralMiembro rut={rutDecoded} />}
 
       {/* Historial de cambios */}
       {!isEdit && <HistorialMiembro rut={rutDecoded} />}

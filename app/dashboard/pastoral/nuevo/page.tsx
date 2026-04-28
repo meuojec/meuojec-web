@@ -62,6 +62,15 @@ export default function NuevoSeguimientoPage() {
           />
         </div>
 
+        <div className="space-y-2">
+          <label className="text-sm text-white/70">Estado</label>
+          <select name="estado" className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-2 text-sm text-white">
+            <option value="pendiente">🟡 Pendiente</option>
+            <option value="contactado">🔵 Contactado</option>
+            <option value="resuelto">🟢 Resuelto</option>
+          </select>
+        </div>
+
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" name="privado" defaultChecked className="rounded" />
           <span className="text-sm text-white/70">🔒 Registro privado (solo visible para pastores y admins)</span>

@@ -17,6 +17,7 @@ export async function registrarSeguimiento(formData: FormData) {
     tipo: String(formData.get("tipo") || "visita"),
     descripcion: String(formData.get("descripcion") || "").trim(),
     privado: formData.get("privado") === "on",
+    estado: String(formData.get("estado") || "pendiente"),
     pastor_id: user.id,
   });
 
@@ -32,4 +33,22 @@ export async function eliminarSeguimiento(id: string) {
   const admin = createAdminClient();
   await admin.from("seguimiento_pastoral").delete().eq("id", id);
   revalidatePath("/dashboard/pastoral");
+}
+
+export async function actualizarEstado(id: string, estado: string): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const estados = ["pendiente", "contactado", "resuelto"];
+  if (!estados.includes(estado)) return;
+
+  const admin = createAdminClient();
+  await admin
+    .from("seguimiento_pastoral")
+    .update({ estado })
+    .eq("id", id);
+
+  revalidatePath("/dashboard/pastoral");
+  revalidatePath("/dashboard/miembros", "layout");
 }
