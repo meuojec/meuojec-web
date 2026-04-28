@@ -2,7 +2,8 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import Link from "next/link";
+import { Menu, X, UserCircle } from "lucide-react";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import GlobalSearch from "@/app/components/GlobalSearch";
 import RealtimeNotifications from "@/app/components/RealtimeNotifications";
@@ -50,6 +51,15 @@ export default function TopbarClient({
 
         {/* Toggle modo claro/oscuro */}
         <ThemeToggle />
+
+        {/* Mi perfil */}
+        <Link
+          href="/dashboard/perfil"
+          title="Mi perfil"
+          className="flex items-center justify-center w-8 h-8 rounded-lg border border-white/10 hover:bg-white/5 transition text-white/70 hover:text-white"
+        >
+          <UserCircle className="h-4 w-4" />
+        </Link>
 
         {/* Cerrar sesion */}
         <button
