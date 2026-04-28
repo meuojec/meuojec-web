@@ -616,9 +616,3 @@ function BirthdaysGridCard({ title, icon: Icon, items, errorText, todayDay }: {
     </CardShell>
   );
 }
-          </div>
-        )}
-      </div>
-    </CardShell>
-  );
-}
