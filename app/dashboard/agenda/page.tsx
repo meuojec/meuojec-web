@@ -6,16 +6,19 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { eliminarActividad } from "./actions";
 import BackButton from "@/app/components/BackButton";
+import CalendarioAgenda from "./CalendarioAgenda";
 
 const TIPO_STYLE: Record<string, string> = {
-  culto: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
-  reunion: "border-sky-500/30 bg-sky-500/10 text-sky-200",
+  culto:      "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
+  reunion:    "border-sky-500/30 bg-sky-500/10 text-sky-200",
   ministerio: "border-purple-500/30 bg-purple-500/10 text-purple-200",
-  especial: "border-amber-500/30 bg-amber-500/10 text-amber-200",
-  otro: "border-white/10 bg-white/5 text-white/50",
+  especial:   "border-amber-500/30 bg-amber-500/10 text-amber-200",
+  otro:       "border-white/10 bg-white/5 text-white/50",
 };
 
-const TIPO_LABEL: Record<string, string> = { culto: "Culto", reunion: "Reunión", ministerio: "Ministerio", especial: "Especial", otro: "Otro" };
+const TIPO_LABEL: Record<string, string> = {
+  culto: "Culto", reunion: "Reunión", ministerio: "Ministerio", especial: "Especial", otro: "Otro",
+};
 
 function fmtFecha(fecha: string) {
   return new Date(fecha + "T12:00:00").toLocaleDateString("es-CL", {
@@ -36,7 +39,20 @@ export default async function AgendaPage() {
   const hoy = new Date().toISOString().slice(0, 10);
   const en30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
   const hace7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const inicioMes = hoy.slice(0, 7) + "-01";
+  const finMes3 = new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10);
 
+  // Para el calendario: 3 meses de actividades
+  const { data: paraCalendario } = await supabase
+    .from("agenda")
+    .select("id,titulo,fecha,hora_inicio,tipo")
+    .eq("activo", true)
+    .gte("fecha", inicioMes)
+    .lte("fecha", finMes3)
+    .order("fecha")
+    .order("hora_inicio");
+
+  // Para la lista: próximos 30 días
   const { data: proximos } = await supabase
     .from("agenda")
     .select("id,titulo,descripcion,fecha,hora_inicio,hora_fin,tipo,lugar")
@@ -54,6 +70,7 @@ export default async function AgendaPage() {
     .lt("fecha", hoy)
     .order("fecha", { ascending: false });
 
+  const actividadesCalendario = (paraCalendario ?? []) as any[];
   const listaProxima = (proximos ?? []) as any[];
   const listaPasada = (pasados ?? []) as any[];
 
@@ -65,7 +82,7 @@ export default async function AgendaPage() {
   }, {});
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="flex items-center gap-3">
@@ -81,6 +98,9 @@ export default async function AgendaPage() {
           + Agregar actividad
         </Link>
       </div>
+
+      {/* Calendario mensual */}
+      <CalendarioAgenda actividades={actividadesCalendario} />
 
       {/* Próximos 30 días */}
       <div className="space-y-4">
@@ -104,7 +124,9 @@ export default async function AgendaPage() {
                 <div key={ev.id} className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
                     <div className="text-xs text-white/40 tabular-nums pt-0.5 min-w-[80px]">
-                      {fmtHora(ev.hora_inicio) ? `${fmtHora(ev.hora_inicio)}${fmtHora(ev.hora_fin) ? ` – ${fmtHora(ev.hora_fin)}` : ""}` : "Todo el día"}
+                      {fmtHora(ev.hora_inicio)
+                        ? `${fmtHora(ev.hora_inicio)}${fmtHora(ev.hora_fin) ? ` – ${fmtHora(ev.hora_fin)}` : ""}`
+                        : "Todo el día"}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -117,11 +139,19 @@ export default async function AgendaPage() {
                       {ev.descripcion && <div className="text-sm text-white/50 mt-1">{ev.descripcion}</div>}
                     </div>
                   </div>
-                  <form action={eliminarActividad.bind(null, ev.id)}>
-                    <button type="submit" className="rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs text-red-300 hover:bg-red-500/20 transition flex-shrink-0">
-                      Quitar
-                    </button>
-                  </form>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Link
+                      href={`/dashboard/agenda/${ev.id}/editar`}
+                      className="rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/60 hover:bg-white/10 transition"
+                    >
+                      Editar
+                    </Link>
+                    <form action={eliminarActividad.bind(null, ev.id)}>
+                      <button type="submit" className="rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs text-red-300 hover:bg-red-500/20 transition">
+                        Quitar
+                      </button>
+                    </form>
+                  </div>
                 </div>
               ))}
             </div>
@@ -141,6 +171,11 @@ export default async function AgendaPage() {
                     <td className="px-4 py-2 text-white/30 tabular-nums text-xs">{ev.fecha}</td>
                     <td className="px-4 py-2 text-white/40">{ev.titulo}</td>
                     <td className="px-4 py-2 text-white/30 text-xs">{ev.lugar ?? ""}</td>
+                    <td className="px-4 py-2">
+                      <Link href={`/dashboard/agenda/${ev.id}/editar`} className="text-xs text-white/20 hover:text-white/50">
+                        Editar
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
