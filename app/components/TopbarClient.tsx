@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "@/app/components/ThemeToggle";
+import GlobalSearch from "@/app/components/GlobalSearch";
 import RealtimeNotifications from "@/app/components/RealtimeNotifications";
 
 export default function TopbarClient({
@@ -37,7 +38,10 @@ export default function TopbarClient({
         )}
       </button>
 
-      <div className="text-sm text-white/60 hidden sm:block">Sistema de Administracion</div>
+      <div className="text-sm text-white/60 hidden md:block">Sistema de Administracion</div>
+
+      {/* Búsqueda global */}
+      <GlobalSearch />
 
       {/* Controles lado derecho */}
       <div className="ml-auto flex items-center gap-2">
