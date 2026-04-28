@@ -153,7 +153,8 @@ export async function GET(req: Request) {
     });
 
     const pdfElement = React.createElement(MiembrosPdf, { rows: pdfRows, fecha });
-    const buf = await renderToBuffer(pdfElement);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const buf = await renderToBuffer(pdfElement as any);
 
     return new NextResponse(buf as unknown as BodyInit, {
       status: 200,
