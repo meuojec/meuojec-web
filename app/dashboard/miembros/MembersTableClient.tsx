@@ -57,7 +57,8 @@ export default function MembersTableClient(props: {
     [selected]
   );
 
-  const allOnPageSelected = props.miembros.length > 0 && props.miembros.every((m) => selected[m.rut]);
+  const allOnPageSelected =
+    props.miembros.length > 0 && props.miembros.every((m) => selected[m.rut]);
 
   function toggleAllOnPage() {
     const next = { ...selected };
@@ -80,13 +81,15 @@ export default function MembersTableClient(props: {
   }
 
   function exportFilteredAll() {
-    const url = `/api/miembros/export?format=${exportFormat}&` + new URLSearchParams({
-      q: props.q || "",
-      ded: props.ded || "",
-      sexo: props.sexo || "",
-      sort: props.sort || "nombre",
-      dir: props.dir || "asc",
-    }).toString();
+    const url =
+      `/api/miembros/export?format=${exportFormat}&` +
+      new URLSearchParams({
+        q: props.q || "",
+        ded: props.ded || "",
+        sexo: props.sexo || "",
+        sort: props.sort || "nombre",
+        dir: props.dir || "asc",
+      }).toString();
     window.location.href = url;
   }
 
@@ -114,7 +117,6 @@ export default function MembersTableClient(props: {
 
   function onRowClick(rut: string, e: React.MouseEvent) {
     const t = e.target as HTMLElement;
-    // evita navegación si clic es sobre controles
     if (t.closest("a,button,input,select,label")) return;
     router.push(`/dashboard/miembros/${encodeURIComponent(rut)}`);
   }
@@ -127,17 +129,15 @@ export default function MembersTableClient(props: {
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="text-sm text-white/60">
-            Total: {props.total} — En esta página: {props.miembros.length} — Tamaño: {props.pageSize}
+            Total: {props.total} — En esta página: {props.miembros.length}
           </div>
 
           <div className="w-px h-6 bg-white/10 mx-1" />
 
-          {/* Selector de formato de exportación */}
           <select
             value={exportFormat}
             onChange={(e) => setExportFormat(e.target.value as "xlsx" | "csv" | "pdf")}
             className="rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm text-white/80 cursor-pointer"
-            title="Formato de exportación"
           >
             <option value="xlsx">Excel (.xlsx)</option>
             <option value="csv">CSV</option>
@@ -202,43 +202,36 @@ export default function MembersTableClient(props: {
                   onChange={toggleAllOnPage}
                 />
               </th>
-
               <th className="text-left font-medium px-4 py-3">
                 <Link href={sortLink("rut")} className="hover:text-white">
                   ID / RUT{sortIndicator("rut")}
                 </Link>
               </th>
-
               <th className="text-left font-medium px-4 py-3">
                 <Link href={sortLink("nombre")} className="hover:text-white">
                   Nombre{sortIndicator("nombre")}
                 </Link>
               </th>
-
               <th className="text-left font-medium px-4 py-3">
                 <Link href={sortLink("sexo")} className="hover:text-white">
                   Sexo{sortIndicator("sexo")}
                 </Link>
               </th>
-
               <th className="text-left font-medium px-4 py-3">
                 <Link href={sortLink("ded")} className="hover:text-white">
                   DED{sortIndicator("ded")}
                 </Link>
               </th>
-
               <th className="text-left font-medium px-4 py-3">
                 <Link href={sortLink("patente")} className="hover:text-white">
                   Patente{sortIndicator("patente")}
                 </Link>
               </th>
-
               <th className="text-left font-medium px-4 py-3">
                 <Link href={sortLink("marca_modelo")} className="hover:text-white">
                   Marca/Modelo{sortIndicator("marca_modelo")}
                 </Link>
               </th>
-
               <th className="text-right font-medium px-4 py-3">Acciones</th>
             </tr>
           </thead>
@@ -247,7 +240,6 @@ export default function MembersTableClient(props: {
             {props.miembros.map((m) => {
               const checked = !!selected[m.rut];
               const safe = encodeURIComponent(m.rut);
-
               return (
                 <tr
                   key={m.rut}
@@ -258,15 +250,17 @@ export default function MembersTableClient(props: {
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => setSelected((prev) => ({ ...prev, [m.rut]: !checked }))}
+                      onChange={() =>
+                        setSelected((prev) => ({ ...prev, [m.rut]: !checked }))
+                      }
                     />
                   </td>
-
                   <td className="px-4 py-3 text-white/90 tabular-nums">{m.rut}</td>
-                  <td className="px-4 py-3 text-white">{formatNombre(m.nombres, m.apellidos)}</td>
+                  <td className="px-4 py-3 text-white">
+                    {formatNombre(m.nombres, m.apellidos)}
+                  </td>
                   <td className="px-4 py-3 text-white/80">{m.sexo ?? <Dash />}</td>
                   <td className="px-4 py-3 text-white/80">{m.ded ?? <Dash />}</td>
-
                   <td className="px-4 py-3 text-white/80">
                     {m.patente ? (
                       <span className="rounded-md border border-white/10 bg-black/30 px-2 py-1 uppercase tabular-nums">
@@ -276,16 +270,25 @@ export default function MembersTableClient(props: {
                       <Dash />
                     )}
                   </td>
-
-                  <td className="px-4 py-3 text-white/80">{m.marca_modelo ?? <Dash />}</td>
-
-                  <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-4 py-3 text-white/80">
+                    {m.marca_modelo ?? <Dash />}
+                  </td>
+                  <td
+                    className="px-4 py-3 text-right"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div className="inline-flex gap-2">
                       <Link
                         href={`/dashboard/miembros/${safe}`}
-                        className="rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-white/80 hover:bg-white/5"
+                        className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
                       >
                         Ver
+                      </Link>
+                      <Link
+                        href={`/dashboard/miembros/${safe}?edit=1`}
+                        className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+                      >
+                        Editar
                       </Link>
                     </div>
                   </td>
@@ -295,14 +298,52 @@ export default function MembersTableClient(props: {
 
             {props.miembros.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-6 text-white/60">
-                  No hay resultados.
+                <td
+                  colSpan={8}
+                  className="px-4 py-10 text-center text-white/40"
+                >
+                  No se encontraron miembros con los filtros aplicados.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Paginación */}
+      {props.totalPages > 1 && (
+        <div className="px-5 py-3 border-t border-white/10 flex items-center justify-between gap-4 text-sm text-white/60">
+          <span>
+            Página {props.page} de {props.totalPages}
+          </span>
+          <div className="flex gap-1">
+            {[
+              { label: "«", page: 1 },
+              { label: "‹", page: props.page - 1 },
+              { label: "›", page: props.page + 1 },
+              { label: "»", page: props.totalPages },
+            ].map(({ label, page }) => {
+              const disabled =
+                (label === "«" || label === "‹") && props.page === 1
+                  ? true
+                  : (label === "›" || label === "»") && props.page === props.totalPages
+                  ? true
+                  : false;
+              return (
+                <Link
+                  key={label}
+                  href={buildHref({ page, pageSize: props.pageSize, q: props.q, ded: props.ded, sexo: props.sexo, sort: props.sort, dir: props.dir })}
+                  className={`rounded px-2 py-1 border border-white/10 ${
+                    disabled ? "opacity-30 pointer-events-none" : "hover:bg-white/5"
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 // app/dashboard/miembros/[rut]/AsistenciasMiembro.tsx
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 
 type AsistRow = {
@@ -12,15 +13,8 @@ type AsistRow = {
   created_at: string | null;
 };
 
-type SesionMeta = {
-  id: string;
-  nombre: string | null;
-  fecha: string | null;
-};
-
 function fmtDate(d: string | null) {
   if (!d) return "—";
-  // fecha viene como YYYY-MM-DD
   const [y, m, day] = d.split("-");
   const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
   return `${day} ${meses[parseInt(m, 10) - 1]} ${y}`;
@@ -31,9 +25,49 @@ function hhmm(t: string | null) {
   return t.slice(0, 5);
 }
 
+function todayISO() {
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Santiago" }).format(new Date());
+}
+
+function sixMonthsAgoISO() {
+  const d = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Santiago" }));
+  d.setMonth(d.getMonth() - 6);
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: "America/Santiago" }).format(d);
+}
+
+function TasaBar({ pct }: { pct: number }) {
+  const color =
+    pct >= 75 ? "bg-green-500" :
+    pct >= 50 ? "bg-yellow-500" :
+    pct >= 25 ? "bg-orange-500" :
+    "bg-red-500";
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-2 rounded-full bg-white/10">
+        <div
+          className={`h-2 rounded-full ${color}`}
+          style={{ width: `${Math.min(100, pct)}%` }}
+        />
+      </div>
+      <span className={`text-sm font-bold tabular-nums ${
+        pct >= 75 ? "text-green-400" :
+        pct >= 50 ? "text-yellow-400" :
+        pct >= 25 ? "text-orange-400" : "text-red-400"
+      }`}>
+        {pct}%
+      </span>
+    </div>
+  );
+}
+
 export default async function AsistenciasMiembro({ rut }: { rut: string }) {
   const supabase = await createClient();
+  const admin = createAdminClient();
 
+  const from6m = sixMonthsAgoISO();
+  const today = todayISO();
+
+  // Asistencias del miembro (todas)
   const { data: rows, error } = await supabase
     .from("asistencias")
     .select("rut,fecha,hora,ded,evento_sesion_id,id_evento,created_at")
@@ -53,7 +87,7 @@ export default async function AsistenciasMiembro({ rut }: { rut: string }) {
   const asistencias = (rows ?? []) as AsistRow[];
   const total = asistencias.length;
 
-  // KPIs
+  // KPIs de fechas
   const fechas = asistencias
     .map((r) => r.fecha)
     .filter(Boolean)
@@ -62,10 +96,26 @@ export default async function AsistenciasMiembro({ rut }: { rut: string }) {
   const primeraVisita = fechas.length > 0 ? fechas[0] : null;
   const ultimaVisita = fechas.length > 0 ? fechas[fechas.length - 1] : null;
 
-  // Sesiones únicas visitadas
-  const sesionesUnicas = new Set(
-    asistencias.map((r) => r.evento_sesion_id ?? r.fecha).filter(Boolean)
+  // ── Tasa de asistencia (últimos 6 meses) ────────────────────────────────────
+  // Total de sesiones en los últimos 6 meses
+  const { data: sesionesData } = await admin
+    .from("eventos_sesiones")
+    .select("id")
+    .gte("fecha", from6m)
+    .lte("fecha", today);
+
+  const totalSesiones6m = (sesionesData ?? []).length;
+
+  // Sesiones únicas asistidas por este miembro en los últimos 6 meses
+  const sesionesAsistidas6m = new Set(
+    asistencias
+      .filter((r) => r.fecha && r.fecha >= from6m && r.fecha <= today && r.evento_sesion_id)
+      .map((r) => r.evento_sesion_id)
   ).size;
+
+  const tasa = totalSesiones6m > 0
+    ? Math.round((sesionesAsistidas6m / totalSesiones6m) * 100)
+    : null;
 
   // Resolución de nombres de sesión
   const sesionIds = Array.from(
@@ -110,7 +160,7 @@ export default async function AsistenciasMiembro({ rut }: { rut: string }) {
 
       {/* KPIs */}
       {total > 0 && (
-        <div className="grid grid-cols-3 divide-x divide-white/5 border-b border-white/10">
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/5 border-b border-white/10">
           <div className="px-5 py-3">
             <div className="text-xs text-white/40">Total asistencias</div>
             <div className="text-2xl font-bold text-white mt-1">{total}</div>
@@ -122,6 +172,19 @@ export default async function AsistenciasMiembro({ rut }: { rut: string }) {
           <div className="px-5 py-3">
             <div className="text-xs text-white/40">Última visita</div>
             <div className="text-sm font-semibold text-white mt-1">{fmtDate(ultimaVisita)}</div>
+          </div>
+          <div className="px-5 py-3">
+            <div className="text-xs text-white/40 mb-1.5">Tasa 6 meses</div>
+            {tasa !== null ? (
+              <>
+                <TasaBar pct={tasa} />
+                <div className="text-xs text-white/30 mt-1">
+                  {sesionesAsistidas6m} de {totalSesiones6m} sesiones
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-white/40">Sin datos</div>
+            )}
           </div>
         </div>
       )}

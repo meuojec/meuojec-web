@@ -205,8 +205,8 @@ export async function GET(req: Request) {
     });
   });
 
-  const buf = await wb.xlsx.writeBuffer();
-  return new NextResponse(buf as unknown as BodyInit, {
+  const xlsxBuf = await wb.xlsx.writeBuffer();
+  return new NextResponse(xlsxBuf as unknown as BodyInit, {
     status: 200,
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

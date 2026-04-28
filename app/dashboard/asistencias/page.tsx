@@ -204,7 +204,7 @@ export default async function AsistenciasHomePage() {
       </div>
 
       {/* Acciones principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[860px]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <ActionCard
           title="Escanear Asistencia"
           desc="Registrar asistencia al instante (QR / búsqueda)."
@@ -213,8 +213,14 @@ export default async function AsistenciasHomePage() {
         />
         <ActionCard
           title="Reportes y filtros"
-          desc="Filtra por fecha, evento, DED y sexo."
+          desc="Filtra por fecha, evento, DED y sexo. Gráficos y exportación."
           href="/dashboard/asistencias/reporte"
+        />
+        <ActionCard
+          title="Miembros inactivos"
+          desc="Detecta quién no ha asistido en semanas y genera seguimiento pastoral."
+          href="/dashboard/asistencias/inactivos"
+          warning
         />
       </div>
 
@@ -298,25 +304,25 @@ function ActionCard({
   desc,
   href,
   primary,
+  warning,
 }: {
   title: string;
   desc: string;
   href: string;
   primary?: boolean;
+  warning?: boolean;
 }) {
+  const cls = primary
+    ? "bg-blue-600/20 hover:bg-blue-600/25"
+    : warning
+    ? "bg-orange-500/10 hover:bg-orange-500/15 border-orange-500/20"
+    : "bg-white/5 hover:bg-white/10";
+  const cta = primary ? "Abrir scanner →" : warning ? "Ver inactivos →" : "Abrir reportes →";
   return (
-    <Link
-      href={href}
-      className={[
-        "rounded-xl border border-white/10 p-5 transition block",
-        primary ? "bg-blue-600/20 hover:bg-blue-600/25" : "bg-white/5 hover:bg-white/10",
-      ].join(" ")}
-    >
+    <Link href={href} className={`rounded-xl border border-white/10 p-5 transition block ${cls}`}>
       <div className="text-lg font-semibold">{title}</div>
       <div className="mt-1 text-sm text-white/70">{desc}</div>
-      <div className="mt-4 text-sm text-white/80">
-        {primary ? "Abrir scanner →" : "Abrir reportes →"}
-      </div>
+      <div className="mt-4 text-sm text-white/80">{cta}</div>
     </Link>
   );
 }

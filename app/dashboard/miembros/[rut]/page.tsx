@@ -32,10 +32,9 @@ export default async function Page({ params, searchParams }: PageProps) {
   if (error) throw error;
   if (!miembro) notFound();
 
-  // 2) Resolver foto desde Storage (por patrón: RUT.FOTO DE IDENTIDAD.*.jpg)
+  // 2) Resolver foto desde Storage
   let initialFotoUrl: string | null = null;
 
-  // Si ya tienes una URL guardada, úsala
   const fromDb =
     (miembro as any)?.foto_identidad_url ||
     (miembro as any)?.foto_url ||
@@ -44,7 +43,6 @@ export default async function Page({ params, searchParams }: PageProps) {
   if (typeof fromDb === "string" && fromDb.startsWith("http")) {
     initialFotoUrl = fromDb;
   } else {
-    // Buscar en el bucket archivos que empiecen con `${rut}.FOTO DE IDENTIDAD.`
     const prefix = `${rutDecoded}.FOTO DE IDENTIDAD.`;
 
     const { data: files } = await supabase.storage
@@ -57,13 +55,9 @@ export default async function Page({ params, searchParams }: PageProps) {
       const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(found.name);
       initialFotoUrl = pub?.publicUrl ?? null;
 
-      // opcional: guardar para no listar siempre
       await supabase
         .from("miembros")
-        .update({
-          foto_path: found.name,
-          foto_url: initialFotoUrl,
-        })
+        .update({ foto_path: found.name, foto_url: initialFotoUrl })
         .eq("rut", rutDecoded);
     }
   }
@@ -71,7 +65,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   return (
     <div className="space-y-4">
       {/* Barra superior */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <Link
           href="/dashboard/miembros"
           className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
@@ -79,21 +73,34 @@ export default async function Page({ params, searchParams }: PageProps) {
           ← Regresar
         </Link>
 
-        {!isEdit ? (
-          <Link
-            href={`/dashboard/miembros/${encodeURIComponent(rutDecoded)}?edit=1`}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white px-3 py-2 text-sm text-black hover:bg-white/90"
-          >
-            ✏️ Editar
-          </Link>
-        ) : (
-          <Link
-            href={`/dashboard/miembros/${encodeURIComponent(rutDecoded)}`}
-            className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
-          >
-            ✖ Cancelar
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          {!isEdit && (
+            <a
+              href={`/api/miembros/${encodeURIComponent(rutDecoded)}/carnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 text-white/70"
+            >
+              🪪 Carnet PDF
+            </a>
+          )}
+
+          {!isEdit ? (
+            <Link
+              href={`/dashboard/miembros/${encodeURIComponent(rutDecoded)}?edit=1`}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white px-3 py-2 text-sm text-black hover:bg-white/90"
+            >
+              ✏️ Editar
+            </Link>
+          ) : (
+            <Link
+              href={`/dashboard/miembros/${encodeURIComponent(rutDecoded)}`}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
+            >
+              ✖ Cancelar
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Formulario */}
@@ -103,10 +110,10 @@ export default async function Page({ params, searchParams }: PageProps) {
         initialFotoUrl={initialFotoUrl}
       />
 
-      {/* Historial de asistencias — solo visible en modo detalle */}
+      {/* Asistencias */}
       {!isEdit && <AsistenciasMiembro rut={rutDecoded} />}
 
-      {/* Historial de cambios — solo visible en modo detalle */}
+      {/* Historial de cambios */}
       {!isEdit && <HistorialMiembro rut={rutDecoded} />}
     </div>
   );
