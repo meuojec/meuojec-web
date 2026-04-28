@@ -4,8 +4,8 @@ import { getNavPermissions } from "@/app/lib/auth/permissions";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function MiembrosLayout({ children }: { children: React.ReactNode }) {
+export default async function Layout({ children }: { children: React.ReactNode }) {
   const perms = await getNavPermissions();
-  if (!perms.miembros) redirect("/dashboard");
+  if (!perms.agenda) redirect("/dashboard");
   return <>{children}</>;
 }

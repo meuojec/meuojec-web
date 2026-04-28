@@ -6,6 +6,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { toggleAnuncio, eliminarAnuncio } from "./actions";
 import BackButton from "@/app/components/BackButton";
+import DeleteConfirmButton from "@/app/components/DeleteConfirmButton";
+
+type Anuncio = {
+  id: string; titulo: string; contenido: string; tipo: string;
+  audiencia: string; activo: boolean; expira_en: string | null; created_at: string;
+};
 
 const TIPO_STYLE: Record<string, string> = {
   urgente: "border-red-500/30 bg-red-500/10 text-red-200",
@@ -25,7 +31,7 @@ export default async function AnunciosPage() {
     .order("activo", { ascending: false })
     .order("created_at", { ascending: false });
 
-  const lista = (todos ?? []) as any[];
+  const lista = (todos ?? []) as Anuncio[];
   const activos = lista.filter((a) => a.activo);
   const inactivos = lista.filter((a) => !a.activo);
 
@@ -73,11 +79,10 @@ export default async function AnunciosPage() {
                     Desactivar
                   </button>
                 </form>
-                <form action={eliminarAnuncio.bind(null, a.id)}>
-                  <button type="submit" className="rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs text-red-300 hover:bg-red-500/20 transition">
-                    Eliminar
-                  </button>
-                </form>
+                <DeleteConfirmButton
+                  action={eliminarAnuncio.bind(null, a.id)}
+                  confirmMessage={`¿Eliminar el anuncio "${a.titulo}"? Esta acción no se puede deshacer.`}
+                />
               </div>
             </div>
             <p className="mt-2 text-sm text-white/70">{a.contenido}</p>

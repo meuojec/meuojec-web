@@ -7,6 +7,11 @@ import { createClient } from "@/lib/supabase/server";
 import { eliminarActividad } from "./actions";
 import BackButton from "@/app/components/BackButton";
 import CalendarioAgenda from "./CalendarioAgenda";
+import DeleteConfirmButton from "@/app/components/DeleteConfirmButton";
+
+type ActividadCal  = { id: string; titulo: string; fecha: string; hora_inicio: string | null; tipo: string };
+type ActividadFull = ActividadCal & { descripcion: string | null; hora_fin: string | null; lugar: string | null };
+type ActividadPast = ActividadCal & { lugar: string | null };
 
 const TIPO_STYLE: Record<string, string> = {
   culto:      "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
@@ -36,46 +41,32 @@ export default async function AgendaPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const hoy = new Date().toISOString().slice(0, 10);
-  const en30 = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-  const hace7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const hoy    = new Date().toISOString().slice(0, 10);
+  const en30   = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+  const hace7  = new Date(Date.now() -  7 * 86400000).toISOString().slice(0, 10);
   const inicioMes = hoy.slice(0, 7) + "-01";
-  const finMes3 = new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10);
+  const finMes3   = new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10);
 
-  // Para el calendario: 3 meses de actividades
   const { data: paraCalendario } = await supabase
-    .from("agenda")
-    .select("id,titulo,fecha,hora_inicio,tipo")
-    .eq("activo", true)
-    .gte("fecha", inicioMes)
-    .lte("fecha", finMes3)
-    .order("fecha")
-    .order("hora_inicio");
+    .from("agenda").select("id,titulo,fecha,hora_inicio,tipo")
+    .eq("activo", true).gte("fecha", inicioMes).lte("fecha", finMes3)
+    .order("fecha").order("hora_inicio");
 
-  // Para la lista: próximos 30 días
   const { data: proximos } = await supabase
-    .from("agenda")
-    .select("id,titulo,descripcion,fecha,hora_inicio,hora_fin,tipo,lugar")
-    .eq("activo", true)
-    .gte("fecha", hoy)
-    .lte("fecha", en30)
-    .order("fecha")
-    .order("hora_inicio");
+    .from("agenda").select("id,titulo,descripcion,fecha,hora_inicio,hora_fin,tipo,lugar")
+    .eq("activo", true).gte("fecha", hoy).lte("fecha", en30)
+    .order("fecha").order("hora_inicio");
 
   const { data: pasados } = await supabase
-    .from("agenda")
-    .select("id,titulo,fecha,hora_inicio,tipo,lugar")
-    .eq("activo", true)
-    .gte("fecha", hace7)
-    .lt("fecha", hoy)
+    .from("agenda").select("id,titulo,fecha,hora_inicio,tipo,lugar")
+    .eq("activo", true).gte("fecha", hace7).lt("fecha", hoy)
     .order("fecha", { ascending: false });
 
-  const actividadesCalendario = (paraCalendario ?? []) as any[];
-  const listaProxima = (proximos ?? []) as any[];
-  const listaPasada = (pasados ?? []) as any[];
+  const actividadesCalendario = (paraCalendario ?? []) as ActividadCal[];
+  const listaProxima          = (proximos ?? [])        as ActividadFull[];
+  const listaPasada           = (pasados  ?? [])        as ActividadPast[];
 
-  // Agrupar por fecha
-  const porFecha = listaProxima.reduce<Record<string, any[]>>((acc, ev) => {
+  const porFecha = listaProxima.reduce<Record<string, ActividadFull[]>>((acc, ev) => {
     if (!acc[ev.fecha]) acc[ev.fecha] = [];
     acc[ev.fecha].push(ev);
     return acc;
@@ -99,7 +90,6 @@ export default async function AgendaPage() {
         </Link>
       </div>
 
-      {/* Calendario mensual */}
       <CalendarioAgenda actividades={actividadesCalendario} />
 
       {/* Próximos 30 días */}
@@ -107,18 +97,14 @@ export default async function AgendaPage() {
         <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider">
           Próximos 30 días ({listaProxima.length})
         </h2>
-
         {listaProxima.length === 0 && (
           <div className="rounded-2xl border border-white/10 bg-black/20 p-8 text-center text-white/40 text-sm">
             Sin actividades programadas para los próximos 30 días.
           </div>
         )}
-
         {Object.entries(porFecha).map(([fecha, eventos]) => (
           <div key={fecha}>
-            <div className="text-sm font-medium text-white/40 mb-2 capitalize px-1">
-              {fmtFecha(fecha)}
-            </div>
+            <div className="text-sm font-medium text-white/40 mb-2 capitalize px-1">{fmtFecha(fecha)}</div>
             <div className="space-y-2">
               {eventos.map((ev) => (
                 <div key={ev.id} className="rounded-2xl border border-white/10 bg-black/20 px-5 py-4 flex items-start justify-between gap-4">
@@ -140,17 +126,14 @@ export default async function AgendaPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <Link
-                      href={`/dashboard/agenda/${ev.id}/editar`}
-                      className="rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/60 hover:bg-white/10 transition"
-                    >
+                    <Link href={`/dashboard/agenda/${ev.id}/editar`} className="rounded border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/60 hover:bg-white/10 transition">
                       Editar
                     </Link>
-                    <form action={eliminarActividad.bind(null, ev.id)}>
-                      <button type="submit" className="rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs text-red-300 hover:bg-red-500/20 transition">
-                        Quitar
-                      </button>
-                    </form>
+                    <DeleteConfirmButton
+                      action={eliminarActividad.bind(null, ev.id)}
+                      confirmMessage={`¿Quitar "${ev.titulo}" de la agenda? Esta acción no se puede deshacer.`}
+                      label="Quitar"
+                    />
                   </div>
                 </div>
               ))}
@@ -172,9 +155,7 @@ export default async function AgendaPage() {
                     <td className="px-4 py-2 text-white/40">{ev.titulo}</td>
                     <td className="px-4 py-2 text-white/30 text-xs">{ev.lugar ?? ""}</td>
                     <td className="px-4 py-2">
-                      <Link href={`/dashboard/agenda/${ev.id}/editar`} className="text-xs text-white/20 hover:text-white/50">
-                        Editar
-                      </Link>
+                      <Link href={`/dashboard/agenda/${ev.id}/editar`} className="text-xs text-white/20 hover:text-white/50">Editar</Link>
                     </td>
                   </tr>
                 ))}

@@ -1,0 +1,5 @@
+"use client";
+import ErrorCard from "@/app/components/ErrorCard";
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  return <ErrorCard error={error} reset={reset} title="Error al cargar administración" />;
+}

@@ -6,12 +6,19 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { eliminarContribucion } from "./actions";
 import BackButton from "@/app/components/BackButton";
+import DeleteConfirmButton from "@/app/components/DeleteConfirmButton";
+
+type Contribucion = {
+  id: string; miembro_rut: string | null; anonimo: boolean;
+  tipo: string; monto: string | number; fecha: string;
+  notas: string | null; created_at: string;
+};
 
 const TIPO_STYLE: Record<string, string> = {
-  diezmo: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
-  ofrenda: "border-sky-500/30 bg-sky-500/10 text-sky-200",
+  diezmo:   "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
+  ofrenda:  "border-sky-500/30 bg-sky-500/10 text-sky-200",
   especial: "border-amber-500/30 bg-amber-500/10 text-amber-200",
-  mision: "border-purple-500/30 bg-purple-500/10 text-purple-200",
+  mision:   "border-purple-500/30 bg-purple-500/10 text-purple-200",
 };
 
 function clp(n: number) {
@@ -36,12 +43,11 @@ export default async function ContribucionesPage() {
     .order("fecha", { ascending: false })
     .limit(200);
 
-  const lista = (todos ?? []) as any[];
-
-  const delMes = lista.filter((c) => c.fecha >= inicio);
-  const totalMes = delMes.reduce((s: number, c: any) => s + Number(c.monto ?? 0), 0);
-  const diezmosMes = delMes.filter((c: any) => c.tipo === "diezmo").reduce((s: number, c: any) => s + Number(c.monto ?? 0), 0);
-  const ofrendasMes = delMes.filter((c: any) => c.tipo === "ofrenda").reduce((s: number, c: any) => s + Number(c.monto ?? 0), 0);
+  const lista = (todos ?? []) as Contribucion[];
+  const delMes     = lista.filter((c) => c.fecha >= inicio);
+  const totalMes   = delMes.reduce((s, c) => s + Number(c.monto ?? 0), 0);
+  const diezmosMes = delMes.filter((c) => c.tipo === "diezmo").reduce((s, c) => s + Number(c.monto ?? 0), 0);
+  const ofrendasMes = delMes.filter((c) => c.tipo === "ofrenda").reduce((s, c) => s + Number(c.monto ?? 0), 0);
 
   return (
     <div className="space-y-6">
@@ -53,21 +59,29 @@ export default async function ContribucionesPage() {
           </div>
           <p className="mt-2 text-white/60">Registro de diezmos, ofrendas y contribuciones especiales.</p>
         </div>
-        <Link
-          href="/dashboard/contribuciones/nueva"
-          className="rounded-xl border border-emerald-500/30 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20 transition"
-        >
-          + Registrar
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/reportes/contribuciones"
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/70 hover:bg-white/10 transition"
+          >
+            ↓ Exportar CSV
+          </a>
+          <Link
+            href="/dashboard/contribuciones/nueva"
+            className="rounded-xl border border-emerald-500/30 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20 transition"
+          >
+            + Registrar
+          </Link>
+        </div>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total mes", valor: clp(totalMes), sub: "este mes" },
-          { label: "Diezmos mes", valor: clp(diezmosMes), sub: "diezmos" },
-          { label: "Ofrendas mes", valor: clp(ofrendasMes), sub: "ofrendas" },
-          { label: "Registros totales", valor: lista.length.toString(), sub: "histórico" },
+          { label: "Total mes",        valor: clp(totalMes),    sub: "este mes" },
+          { label: "Diezmos mes",      valor: clp(diezmosMes),  sub: "diezmos" },
+          { label: "Ofrendas mes",     valor: clp(ofrendasMes), sub: "ofrendas" },
+          { label: "Registros totales",valor: lista.length.toString(), sub: "histórico" },
         ].map((k) => (
           <div key={k.label} className="rounded-2xl border border-white/10 bg-black/20 p-5">
             <div className="text-sm text-white/60">{k.label}</div>
@@ -110,22 +124,16 @@ export default async function ContribucionesPage() {
                   <td className="px-4 py-3 text-right font-mono text-white/90">{clp(Number(c.monto))}</td>
                   <td className="px-4 py-3 text-white/50 max-w-[200px] truncate">{c.notas ?? "—"}</td>
                   <td className="px-4 py-3 text-right">
-                    <form action={eliminarContribucion.bind(null, c.id)}>
-                      <button
-                        type="submit"
-                        className="rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs text-red-300 hover:bg-red-500/20 transition"
-                      >
-                        Eliminar
-                      </button>
-                    </form>
+                    <DeleteConfirmButton
+                      action={eliminarContribucion.bind(null, c.id)}
+                      confirmMessage={`¿Eliminar esta contribución de ${clp(Number(c.monto))}? Esta acción no se puede deshacer.`}
+                    />
                   </td>
                 </tr>
               ))}
               {lista.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-white/40">
-                    Sin contribuciones registradas.
-                  </td>
+                  <td colSpan={6} className="px-4 py-8 text-center text-white/40">Sin contribuciones registradas.</td>
                 </tr>
               )}
             </tbody>
