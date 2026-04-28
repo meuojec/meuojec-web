@@ -87,16 +87,14 @@ function fmtDateTimeCL(dateStr: string) {
   }).format(d);
 }
 
+const MESES_ES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
 function fmtDayMonthCL(dateStr?: string | null) {
   if (!dateStr) return "—";
   const [yy, mm, dd] = dateStr.split("-").map(Number);
   if (!yy || !mm || !dd) return "—";
-  const d = new Date(Date.UTC(yy, mm - 1, dd));
-  return new Intl.DateTimeFormat("es-CL", {
-    timeZone: "UTC",
-    day: "2-digit",
-    month: "long",
-  }).format(d);
+  const mes = MESES_ES[mm - 1] ?? "";
+  return `${String(dd).padStart(2, "0")} de ${mes}`;
 }
 
 export default async function DashboardPage() {
@@ -612,6 +610,12 @@ function BirthdaysGridCard({ title, icon: Icon, items, errorText, todayDay }: {
                 </Link>
               );
             })}
+          </div>
+        )}
+      </div>
+    </CardShell>
+  );
+}
           </div>
         )}
       </div>
