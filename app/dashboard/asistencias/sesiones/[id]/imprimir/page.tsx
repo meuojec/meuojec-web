@@ -27,7 +27,7 @@ export default async function ImprimirAsistenciaSesionPage({ params }: { params:
   const { data: rows } = await supabase
     .from("asistencias")
     .select("rut,fecha,hora,ded,created_at")
-    .eq("id_sesion", id)
+    .eq("evento_sesion_id", id)
     .order("created_at", { ascending: true });
 
   const total = rows?.length ?? 0;

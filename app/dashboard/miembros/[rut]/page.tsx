@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import MemberForm, { type MemberRow } from "@/app/components/MemberForm";
 import BackButton from "@/app/components/BackButton";
 import HistorialMiembro from "./HistorialMiembro";
+import AsistenciasMiembro from "./AsistenciasMiembro";
 
 type PageProps = {
   params: Promise<{ rut: string }>;
@@ -101,6 +102,9 @@ export default async function Page({ params, searchParams }: PageProps) {
         initialData={miembro}
         initialFotoUrl={initialFotoUrl}
       />
+
+      {/* Historial de asistencias — solo visible en modo detalle */}
+      {!isEdit && <AsistenciasMiembro rut={rutDecoded} />}
 
       {/* Historial de cambios — solo visible en modo detalle */}
       {!isEdit && <HistorialMiembro rut={rutDecoded} />}

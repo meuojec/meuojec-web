@@ -209,7 +209,12 @@ export default async function ReporteAsistenciaPage({
                   {rep.comparativoSesiones.slice(0, 15).map((s) => (
                     <tr key={s.id} className="border-b border-white/5">
                       <td className="py-2">
-                        <div className="font-medium">{s.nombre}</div>
+                        <Link
+                          href={`/dashboard/asistencias/sesiones/${encodeURIComponent(s.id)}`}
+                          className="font-medium hover:underline underline-offset-2"
+                        >
+                          {s.nombre}
+                        </Link>
                         <div className="text-xs text-white/50">{s.id}</div>
                       </td>
                       <td className="py-2 whitespace-nowrap">
