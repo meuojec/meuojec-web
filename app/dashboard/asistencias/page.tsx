@@ -332,7 +332,6 @@ function ActionCard({
   return (
     <Link href={href} className={`rounded-xl border border-white/10 p-5 transition block ${cls}`}>
       <div className="text-lg font-semibold">{title}</div>
-      <div className="mt-1 text-sm text-white/70">{desc}</div>
       <div className="mt-4 text-sm text-white/80">{cta}</div>
     </Link>
   );

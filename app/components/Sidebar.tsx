@@ -135,6 +135,7 @@ function FinanzasSubmenu({ enabled }: { enabled: boolean }) {
       </div>
       <nav className="mt-2 space-y-1">
         {[
+          { href: "/dashboard/finanzas/dashboard",        label: "Dashboard",       icon: false },
           { href: "/dashboard/finanzas/transacciones",   label: "Transacciones",   icon: true },
           { href: "/dashboard/finanzas/contribuciones",  label: "Contribuciones",  icon: false },
           { href: "/dashboard/finanzas/cuentas",         label: "Cuentas",         icon: false },
@@ -222,9 +223,7 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
             >
               Jerry Sainteron
             </a>
-          </div>
-          <div>
-            &copy; {new Date().getFullYear()} MEUOJEC &middot; Todos los derechos reservados
+ot; · Todos los derechos reservados
           </div>
         </div>
       </div>
