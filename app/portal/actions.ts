@@ -55,13 +55,15 @@ export async function consultarPortal(fd: FormData): Promise<PortalResult> {
   // Buscar miembro probando todas las variantes de formato de RUT
   const variants = rutVariants(rawRut);
   let m: any = null;
+  let lastError: string | null = null;
 
   for (const v of variants) {
-    const { data } = await admin
+    const { data, error } = await admin
       .from("miembros")
       .select("rut,nombres,apellidos,fecha_nacimiento,email,telefono,direccion,sexo,ded,estado,fecha_ingreso,foto_url")
       .eq("rut", v)
       .maybeSingle();
+    if (error) { lastError = error.message; }
     if (data) { m = data; break; }
   }
 
@@ -69,7 +71,9 @@ export async function consultarPortal(fd: FormData): Promise<PortalResult> {
   const rut: string = m?.rut ?? variants[0];
 
   if (!m) {
-    return { ok: false, error: "RUT no encontrado. Verifica que estés registrado." };
+    // Si hay error de Supabase, mostrarlo para diagnóstico
+    if (lastError) return { ok: false, error: `Error de conexión: ${lastError}` };
+    return { ok: false, error: `RUT no encontrado (buscado: ${variants.join(" / ")})` };
   }
 
   // Verificar fecha de nacimiento
