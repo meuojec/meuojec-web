@@ -16,9 +16,16 @@ import {
   Package,
   BookOpen,
   Settings,
-  Wallet,
   ArrowLeft,
   ShieldCheck,
+  ArrowLeftRight,
+  Target,
+  Gift,
+  Landmark,
+  Tag,
+  Lock,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import BackButton from "@/app/components/BackButton";
 
@@ -46,19 +53,23 @@ const SECTIONS: SectionItem[] = [
     modules: [
       {
         name: "Dashboard",
-        desc: "Resumen general con indicadores clave: total de miembros activos, asistencia reciente, proximos eventos y actividad del sistema.",
+        desc: "Resumen general con indicadores clave: total de miembros activos, asistencia reciente, contribuciones del mes, visitantes nuevos, proximos eventos y cumpleanos del dia.",
       },
       {
         name: "Miembros",
-        desc: "Registro completo de los miembros de la iglesia. Permite agregar nuevos miembros, editar sus datos, ver su ficha en PDF, asignarlos a departamentos y gestionar su estado activo/inactivo.",
+        desc: "Registro completo de los miembros de la iglesia. Permite agregar nuevos miembros, editar sus datos, ver su ficha en PDF, subir foto de perfil, asignarlos a departamentos y gestionar su estado activo/inactivo.",
       },
       {
         name: "Asistencias",
-        desc: "Control de asistencia a servicios y reuniones. Registro por fecha, visualizacion de historico y reportes de presencia por miembro o periodo.",
+        desc: "Control de asistencia a servicios y reuniones. Registro por fecha, edicion de hora y departamento (DED) por fila, eliminacion con confirmacion, y reporte historico exportable.",
       },
       {
         name: "Eventos",
         desc: "Creacion y seguimiento de eventos de la congregacion: cultos especiales, conferencias, ayunos, etc. Incluye fecha, descripcion y control de asistentes.",
+      },
+      {
+        name: "Esc. Dominical",
+        desc: "Modulo de sesiones de Discipulado y Educacion Cristiana (DED). Registra asistencia de miembros y visitantes, cantidad de biblias, libros de cantos, ofrenda y notas por sesion.",
       },
     ],
   },
@@ -70,7 +81,7 @@ const SECTIONS: SectionItem[] = [
     modules: [
       {
         name: "Visitantes",
-        desc: "Registro de personas que visitan la iglesia pero aun no son miembros. Permite hacer seguimiento pastoral personalizado y convertirlos en miembros cuando corresponda.",
+        desc: "Registro de personas que visitan la iglesia pero aun no son miembros. Permite hacer seguimiento pastoral personalizado y convertirlos en miembros cuando corresponda. Los visitantes tambien pueden registrarse ellos mismos via el formulario publico.",
       },
       {
         name: "Pastoral",
@@ -112,17 +123,29 @@ const SECTIONS: SectionItem[] = [
   },
   {
     label: "Finanzas",
-    icon: Wallet,
+    icon: Landmark,
     color: "text-emerald-300",
     desc: "Control financiero completo de la iglesia. Registra ingresos, egresos, diezmos, ofrendas y genera cierres de caja con trazabilidad total.",
     modules: [
       {
+        name: "Dashboard",
+        desc: "Vision general de las finanzas: saldo por cuenta, ingresos y egresos del mes, grafico de flujo mensual y resumen de categorias mas activas.",
+      },
+      {
         name: "Transacciones",
-        desc: "Registro de todos los movimientos financieros: ingresos (diezmos, ofrendas, contribuciones, eventos) y egresos (gastos operativos, servicios, compras). Filtros por categoria, cuenta y fecha.",
+        desc: "Registro de todos los movimientos financieros: ingresos (diezmos, ofrendas, contribuciones, eventos) y egresos (gastos operativos, servicios, compras). Filtros por tipo, cuenta, categoria y fecha. Exportable a CSV.",
+      },
+      {
+        name: "Presupuesto",
+        desc: "Definicion del presupuesto mensual por categoria. Muestra el monto presupuestado vs el ejecutado real con barra de progreso y alertas cuando se supera el limite. Los administradores pueden editar los montos inline.",
+      },
+      {
+        name: "Contribuciones",
+        desc: "Registro de diezmos y ofrendas por miembro. Permite vincular cada contribucion a una persona para generar informes anuales de aportaciones.",
       },
       {
         name: "Cuentas",
-        desc: "Administracion de las cuentas financieras de la iglesia (caja chica, cuenta bancaria, etc.). Muestra saldo actual y movimientos por cuenta.",
+        desc: "Administracion de las cuentas financieras de la iglesia (caja chica, cuenta bancaria, fondo terreno, etc.). Muestra saldo actual y movimientos por cuenta.",
       },
       {
         name: "Categorias",
@@ -143,10 +166,6 @@ const SECTIONS: SectionItem[] = [
       {
         name: "Inventario",
         desc: "Control de los bienes e insumos de la iglesia: equipos, mobiliario, materiales de culto, etc. Registra entradas, salidas y el stock disponible.",
-      },
-      {
-        name: "DED (Discipulado)",
-        desc: "Modulo para gestionar sesiones de discipulado y educacion cristiana. Registra asistencia, temario y avance por grupo.",
       },
       {
         name: "Administracion",
@@ -179,7 +198,7 @@ const ROLES: RoleRow[] = [
     key: "tesorero",
     name: "Tesorero",
     seccion: "Finanzas",
-    desc: "Acceso total al modulo de finanzas: transacciones, cuentas, categorias y cierres.",
+    desc: "Acceso total al modulo de finanzas: transacciones, presupuesto, contribuciones, cuentas, categorias y cierres.",
   },
   {
     key: "lider",
@@ -210,6 +229,31 @@ const ROLES: RoleRow[] = [
     name: "Ujier",
     seccion: "Asistencias",
     desc: "Registra asistencias a servicios y reuniones. Sin acceso a datos sensibles.",
+  },
+];
+
+const PUBLIC_LINKS = [
+  {
+    label: "Portal del Miembro",
+    href: "/portal",
+    external: false,
+    icon: Users,
+    color: "text-blue-300",
+    border: "border-blue-500/20",
+    bg: "bg-blue-500/5",
+    desc: "Los miembros pueden consultar sus datos personales, historial de asistencias del ano y estadisticas propias ingresando con su RUT y fecha de nacimiento. No requiere cuenta en el sistema.",
+    example: "app.meuojec.org/portal",
+  },
+  {
+    label: "Registro de Visitantes",
+    href: "/registro-visitante",
+    external: false,
+    icon: UserCheck,
+    color: "text-amber-300",
+    border: "border-amber-500/20",
+    bg: "bg-amber-500/5",
+    desc: "Formulario publico para que los visitantes se registren ellos mismos desde su celular o un dispositivo en la entrada. Los datos quedan disponibles inmediatamente en el modulo Pastoral > Visitantes.",
+    example: "app.meuojec.org/registro-visitante",
   },
 ];
 
@@ -253,11 +297,8 @@ export default function ManualPage() {
         </Link>
 
         <div className="flex items-center gap-3">
-
           <BackButton />
-
           <h1 className="mt-4 text-3xl font-bold text-white">Manual de usuario</h1>
-
         </div>
         <p className="mt-2 text-white/60 max-w-2xl">
           MEUOJEC es el sistema de gestion integral de la Iglesia. Centraliza la administracion
@@ -268,8 +309,9 @@ export default function ManualPage() {
         <div className="mt-4 flex flex-wrap gap-3">
           {[
             { label: "6 secciones", color: "bg-sky-500/10 border-sky-500/20 text-sky-200" },
-            { label: "15+ modulos", color: "bg-violet-500/10 border-violet-500/20 text-violet-200" },
+            { label: "20 modulos", color: "bg-violet-500/10 border-violet-500/20 text-violet-200" },
             { label: "9 roles", color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-200" },
+            { label: "2 accesos publicos", color: "bg-amber-500/10 border-amber-500/20 text-amber-200" },
           ].map((p) => (
             <span
               key={p.label}
@@ -278,6 +320,47 @@ export default function ManualPage() {
               {p.label}
             </span>
           ))}
+        </div>
+      </div>
+
+      {/* Accesos publicos */}
+      <div>
+        <div className="mb-4 flex items-center gap-3">
+          <Globe className="h-5 w-5 text-blue-300" />
+          <h2 className="text-lg font-semibold text-white">Accesos publicos</h2>
+        </div>
+        <p className="mb-4 text-sm text-white/55">
+          con miembros o visitantes directamente.
+        </p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {PUBLIC_LINKS.map((pl) => {
+            const Icon = pl.icon;
+            return (
+              <div
+                key={pl.label}
+                className={`rounded-2xl border ${pl.border} ${pl.bg} p-5 space-y-3`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Icon className={`h-5 w-5 ${pl.color}`} />
+                    <span className="font-semibold text-white">{pl.label}</span>
+                  </div>
+                  <Link
+                    href={pl.href}
+                    target="_blank"
+                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70 hover:bg-white/10 hover:text-white transition"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    Abrir
+                  </Link>
+                </div>
+                <p className="text-sm text-white/55">{pl.desc}</p>
+                <div className="rounded-lg bg-black/30 px-3 py-2 font-mono text-xs text-white/40">
+                  {pl.example}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -300,7 +383,7 @@ export default function ManualPage() {
         <p className="mb-4 text-sm text-white/55">
           Cada usuario del panel tiene asignado uno o mas roles. Los roles determinan que secciones
           puede ver y que acciones puede realizar. El administrador asigna los roles desde
-          Administracion &rarr; Usuarios.
+          Administracion &#8594; Usuarios.
         </p>
 
         <div className="overflow-auto rounded-2xl border border-white/10">
@@ -337,8 +420,7 @@ export default function ManualPage() {
 
       {/* Footer */}
       <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-white/50">
-        Este manual refleja el estado actual del sistema. Algunas secciones pueden estar en
-        desarrollo y mostrarse como "Proximamente". Para soporte tecnico o reportar errores,
+        Este manual refleja el estado actual del sistema. Para soporte tecnico o reportar errores,
         contacta al administrador del sistema.
       </div>
     </div>
