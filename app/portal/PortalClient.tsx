@@ -9,8 +9,7 @@ function formatRut(v: string) {
   if (clean.length < 2) return clean;
   const body = clean.slice(0, -1);
   const dv = clean.slice(-1);
-  const fmt = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return `${fmt}-${dv}`;
+  return `${body}-${dv}`;
 }
 
 function hhmmFromTime(t?: string | null) {
@@ -38,7 +37,7 @@ export default function PortalClient() {
     e.preventDefault();
     setError("");
     const fd = new FormData(e.currentTarget);
-    fd.set("rut", rut.replace(/\./g, ""));
+    fd.set("rut", rut);
     startTransition(async () => {
       const res = await consultarPortal(fd);
       if (res.ok) setData(res.data);
@@ -68,7 +67,7 @@ export default function PortalClient() {
           </div>
           <button onClick={() => setData(null)}
             className="ml-auto text-xs text-white/30 hover:text-white/60 transition">
-            Cerrar sesión
+            Cerrar sesion
           </button>
         </div>
 
@@ -76,7 +75,7 @@ export default function PortalClient() {
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
             <div className="text-2xl font-bold text-emerald-400">{data.totalAno}</div>
-            <div className="text-xs text-white/50 mt-1">Asistencias este año</div>
+            <div className="text-xs text-white/50 mt-1">Asistencias este ano</div>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
             <div className="text-2xl font-bold text-blue-400">{data.totalMes}</div>
@@ -94,8 +93,8 @@ export default function PortalClient() {
           <div className="grid grid-cols-2 gap-3 text-sm">
             {[
               ["Email", m.email],
-              ["Teléfono", m.telefono],
-              ["Dirección", m.direccion],
+              ["Telefono", m.telefono],
+              ["Direccion", m.direccion],
               ["Fecha nacimiento", m.fecha_nacimiento ? fmtFecha(m.fecha_nacimiento) : null],
               ["Fecha ingreso", m.fecha_ingreso ? fmtFecha(m.fecha_ingreso) : null],
               ["Sexo", m.sexo],
@@ -115,7 +114,7 @@ export default function PortalClient() {
           </div>
           {data.asistencias.length === 0 ? (
             <div className="px-5 py-8 text-sm text-white/40 text-center">
-              Sin asistencias registradas este año.
+              Sin asistencias registradas este ano.
             </div>
           ) : (
             <div className="divide-y divide-white/5">
@@ -153,7 +152,7 @@ export default function PortalClient() {
         <div className="space-y-1.5">
           <label className="text-sm text-white/70">RUT</label>
           <input value={rut} onChange={handleRutChange} name="rut_display"
-            placeholder="12.345.678-9" maxLength={12} required
+            placeholder="12345678-9" maxLength={10} required
             className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition" />
         </div>
 
@@ -171,12 +170,12 @@ export default function PortalClient() {
 
         <button type="submit" disabled={pending}
           className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-60 px-4 py-3 text-sm font-semibold text-white transition">
-          {pending ? "Verificando…" : "Consultar mis datos"}
+          {pending ? "Verificando..." : "Consultar mis datos"}
         </button>
       </form>
 
       <p className="text-center text-xs text-white/20 mt-6">
-        Solo tú puedes ver tu información
+        Solo tu puedes ver tu informacion
       </p>
     </div>
   );

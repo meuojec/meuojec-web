@@ -23,6 +23,33 @@ export async function deleteAsistenciaByCreatedAt(input: {
   return { ok: true };
 }
 
+export async function updateAsistencia(input: {
+  rut: string;
+  created_at: string;
+  ded?: string | null;
+  hora?: string | null;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No autenticado" };
+
+  const updates: Record<string, unknown> = {};
+  if (input.ded !== undefined) updates.ded = input.ded || null;
+  if (input.hora !== undefined) updates.hora = input.hora || null;
+
+  if (Object.keys(updates).length === 0) return { ok: true };
+
+  const { error } = await supabase
+    .from("asistencias")
+    .update(updates)
+    .eq("rut", input.rut)
+    .eq("created_at", input.created_at);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/dashboard/asistencias/reporte");
+  return { ok: true };
+}
+
 export type AsistenciaDataRow = {
   rut: string;
   nombre: string;

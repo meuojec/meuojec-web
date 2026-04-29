@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { AsistenciaDataRow } from "./actions";
+import RowActions from "./RowActions";
 
 const PAGE_SIZE = 50;
 
@@ -81,6 +82,7 @@ export default function TablaAsistencias({ rows }: { rows: AsistenciaDataRow[] }
               <th className="text-left font-medium px-4 py-3">Sesión</th>
               <th className="text-left font-medium px-4 py-3">DED</th>
               <th className="text-left font-medium px-4 py-3">Sexo</th>
+              <th className="text-left font-medium px-4 py-3">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -124,11 +126,22 @@ export default function TablaAsistencias({ rows }: { rows: AsistenciaDataRow[] }
                 </td>
                 <td className="px-4 py-3 text-white/60 text-xs">{r.ded ?? "—"}</td>
                 <td className="px-4 py-3 text-white/40 text-xs">{r.sexo ?? "—"}</td>
+                <td className="px-4 py-3">
+                  {r.created_at ? (
+                    <RowActions
+                      rut={r.rut}
+                      created_at={r.created_at}
+                      nombre={r.nombre}
+                      ded={r.ded}
+                      hora={r.hora}
+                    />
+                  ) : null}
+                </td>
               </tr>
             ))}
             {slice.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-white/30">
+                <td colSpan={9} className="px-4 py-10 text-center text-white/30">
                   No hay registros con los filtros aplicados.
                 </td>
               </tr>

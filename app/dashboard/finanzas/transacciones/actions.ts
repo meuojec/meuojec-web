@@ -209,3 +209,70 @@ export async function updateTx(payload: TxPayload & { id: string }) {
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
+
+// ─── Export ────────────────────────────────────────────────────────────────
+
+export type ExportRow = {
+  fecha: string;
+  tipo: string;
+  monto: number;
+  cuenta: string;
+  cuenta_destino: string;
+  categoria: string;
+  metodo_pago: string;
+  referencia: string;
+  descripcion: string;
+};
+
+export async function exportTransacciones(params: {
+  tipo?: string;
+  cuenta?: string;
+  categoria?: string;
+  desde?: string;
+  hasta?: string;
+  q?: string;
+}): Promise<{ ok: true; rows: ExportRow[] } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No autenticado" };
+
+  // Cuentas y categorías para resolver nombres
+  const [{ data: cuentasData }, { data: catsData }] = await Promise.all([
+    supabase.from("fin_cuentas").select("id,nombre").eq("area", AREA_FIJA),
+    supabase.from("fin_categorias").select("id,nombre").eq("area", AREA_FIJA),
+  ]);
+  const cuentaMap = new Map(((cuentasData ?? []) as { id: string; nombre: string | null }[]).map((c) => [c.id, c.nombre ?? "—"]));
+  const catMap = new Map(((catsData ?? []) as { id: string; nombre: string | null }[]).map((c) => [c.id, c.nombre ?? "—"]));
+
+  let query = supabase
+    .from("fin_movimientos")
+    .select("fecha,tipo,monto,cuenta_id,cuenta_destino_id,categoria_id,metodo_pago,referencia,descripcion")
+    .eq("area", AREA_FIJA)
+    .order("fecha", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(5000);
+
+  if (params.tipo && params.tipo !== "TODOS") query = query.eq("tipo", params.tipo);
+  if (params.cuenta) query = query.eq("cuenta_id", params.cuenta);
+  if (params.categoria) query = query.eq("categoria_id", params.categoria);
+  if (params.desde) query = query.gte("fecha", params.desde);
+  if (params.hasta) query = query.lte("fecha", params.hasta);
+  if (params.q?.trim()) query = query.or(`referencia.ilike.%${params.q.trim()}%,descripcion.ilike.%${params.q.trim()}%`);
+
+  const { data, error } = await query;
+  if (error) return { ok: false, error: error.message };
+
+  const rows: ExportRow[] = ((data ?? []) as any[]).map((r) => ({
+    fecha: r.fecha ?? "",
+    tipo: r.tipo ?? "",
+    monto: typeof r.monto === "number" ? r.monto : 0,
+    cuenta: r.cuenta_id ? (cuentaMap.get(r.cuenta_id) ?? "—") : "—",
+    cuenta_destino: r.cuenta_destino_id ? (cuentaMap.get(r.cuenta_destino_id) ?? "—") : "",
+    categoria: r.categoria_id ? (catMap.get(r.categoria_id) ?? "—") : "—",
+    metodo_pago: r.metodo_pago ?? "",
+    referencia: r.referencia ?? "",
+    descripcion: r.descripcion ?? "",
+  }));
+
+  return { ok: true, rows };
+}

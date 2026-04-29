@@ -34,22 +34,41 @@ export type PortalResult =
   | { ok: true; data: PortalData }
   | { ok: false; error: string };
 
+/** Genera ambas variantes del RUT para buscar en BD sin importar cómo esté guardado */
+function rutVariants(raw: string): string[] {
+  const clean = raw.replace(/\./g, "").toUpperCase(); // sin puntos: 12345678-9
+  const body = clean.slice(0, -2); // 12345678
+  const dv = clean.slice(-1);      // 9
+  // con puntos: 12.345.678-9
+  const conPuntos = body.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "-" + dv;
+  return Array.from(new Set([clean, conPuntos, raw.toUpperCase()]));
+}
+
 export async function consultarPortal(fd: FormData): Promise<PortalResult> {
-  const rut = String(fd.get("rut") ?? "").trim();
+  const rawRut = String(fd.get("rut") ?? "").trim();
   const fecha = String(fd.get("fecha_nacimiento") ?? "").trim();
 
-  if (!rut || !fecha) return { ok: false, error: "Completa todos los campos." };
+  if (!rawRut || !fecha) return { ok: false, error: "Completa todos los campos." };
 
   const admin = createAdminClient();
 
-  // Buscar miembro por RUT
-  const { data: m, error } = await admin
-    .from("miembros")
-    .select("rut,nombres,apellidos,fecha_nacimiento,email,telefono,direccion,sexo,ded,estado,fecha_ingreso,foto_url")
-    .eq("rut", rut)
-    .maybeSingle();
+  // Buscar miembro probando todas las variantes de formato de RUT
+  const variants = rutVariants(rawRut);
+  let m: any = null;
 
-  if (error || !m) {
+  for (const v of variants) {
+    const { data } = await admin
+      .from("miembros")
+      .select("rut,nombres,apellidos,fecha_nacimiento,email,telefono,direccion,sexo,ded,estado,fecha_ingreso,foto_url")
+      .eq("rut", v)
+      .maybeSingle();
+    if (data) { m = data; break; }
+  }
+
+  // Usar el RUT real de la BD para queries de asistencias
+  const rut: string = m?.rut ?? variants[0];
+
+  if (!m) {
     return { ok: false, error: "RUT no encontrado. Verifica que estés registrado." };
   }
 

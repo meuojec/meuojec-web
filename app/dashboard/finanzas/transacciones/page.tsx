@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import FiltrosTransacciones from "./_components/FiltrosTransacciones";
 import DeleteButton from "./_components/DeleteButton";
+import ExportTransaccionesButton from "./_components/ExportTransaccionesButton";
 
 type Cuenta = {
   id: string;
@@ -199,8 +200,17 @@ export default async function TransaccionesPage(props: {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <ExportTransaccionesButton
+            tipo={tipo !== "TODOS" ? tipo : undefined}
+            cuenta={cuenta || undefined}
+            categoria={categoria || undefined}
+            desde={desde || undefined}
+            hasta={hasta || undefined}
+            q={q || undefined}
+            filename={`transacciones_${desde || "todo"}_${hasta || "todo"}.csv`}
+          />
           <Link
-            href="/dashboard/reportes/finanzas"
+            href="/dashboard/finanzas/reportes"
             className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/5 hover:text-white"
           >
             Ver reportes
