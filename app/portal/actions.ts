@@ -23,11 +23,18 @@ export type AsistenciaPortal = {
   evento: string | null;
 };
 
+export type AsistenciaPorEvento = {
+  evento: string;
+  total: number;
+};
+
 export type PortalData = {
   miembro: MiembroPortal;
   asistencias: AsistenciaPortal[];
   totalAno: number;
   totalMes: number;
+  eventosUnicos: number;
+  porEvento: AsistenciaPorEvento[];
 };
 
 export type PortalResult =
@@ -116,6 +123,18 @@ export async function consultarPortal(fd: FormData): Promise<PortalResult> {
   const totalAno = lista.length;
   const totalMes = lista.filter(a => a.fecha >= inicioMes).length;
 
+  // Asistencias agrupadas por evento
+  const countPorEvento = new Map<string, number>();
+  for (const a of asistencias) {
+    const key = a.evento ?? "Culto general";
+    countPorEvento.set(key, (countPorEvento.get(key) ?? 0) + 1);
+  }
+  const porEvento: AsistenciaPorEvento[] = Array.from(countPorEvento.entries())
+    .map(([evento, total]) => ({ evento, total }))
+    .sort((a, b) => b.total - a.total);
+
+  const eventosUnicos = porEvento.length;
+
   return {
     ok: true,
     data: {
@@ -123,6 +142,8 @@ export async function consultarPortal(fd: FormData): Promise<PortalResult> {
       asistencias,
       totalAno,
       totalMes,
+      eventosUnicos,
+      porEvento,
     },
   };
 }

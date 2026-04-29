@@ -48,31 +48,63 @@ export default function PortalClient() {
   if (data) {
     const m = data.miembro;
     const nombre = [m.nombres, m.apellidos].filter(Boolean).join(" ") || "—";
+
+    const datosPersonales: [string, string | null | undefined][] = [
+      ["Correo", m.correo_electronico],
+      ["Telefono", m.telefono],
+      ["Direccion", m.direccion ? `${m.direccion}${m.comuna ? ", " + m.comuna : ""}` : null],
+      ["Nacimiento", m.fecha_nacimiento ? fmtFecha(m.fecha_nacimiento) : null],
+      ["Sexo", m.sexo],
+      ["Membresia", m.estado_membresia],
+    ].filter(([, v]) => !!v) as [string, string][];
+
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header perfil */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 flex items-center gap-5">
-          {m.foto_url ? (
-            <Image src={m.foto_url} alt={nombre} width={72} height={72}
-              className="rounded-full object-cover w-18 h-18 border-2 border-white/20" />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold text-white/50">
-              {(m.nombres ?? "?")[0]?.toUpperCase()}
+      <div className="max-w-2xl mx-auto space-y-5">
+
+        {/* Tarjeta de perfil con datos debajo del nombre */}
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <div className="flex items-start gap-5">
+            {/* Foto */}
+            {m.foto_url ? (
+              <Image src={m.foto_url} alt={nombre} width={72} height={72}
+                className="rounded-full object-cover shrink-0 border-2 border-white/20" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-white/10 shrink-0 flex items-center justify-center text-2xl font-bold text-white/50">
+                {(m.nombres ?? "?")[0]?.toUpperCase()}
+              </div>
+            )}
+
+            {/* Nombre + datos */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="text-xl font-bold text-white">{nombre}</div>
+                  <div className="text-sm text-white/50">RUT: {m.rut}</div>
+                  {m.ded && <div className="text-xs text-white/40">DED: {m.ded}</div>}
+                </div>
+                <button onClick={() => setData(null)}
+                  className="text-xs text-white/30 hover:text-white/60 transition shrink-0">
+                  Cerrar sesion
+                </button>
+              </div>
+
+              {/* Mis datos — debajo del nombre */}
+              {datosPersonales.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-2 gap-x-6 gap-y-2.5">
+                  {datosPersonales.map(([label, value]) => (
+                    <div key={label}>
+                      <div className="text-[10px] text-white/35 uppercase tracking-wide">{label}</div>
+                      <div className="text-sm text-white/80 truncate">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-          <div>
-            <div className="text-xl font-bold text-white">{nombre}</div>
-            <div className="text-sm text-white/50">RUT: {m.rut}</div>
-            {m.ded && <div className="mt-1 text-xs text-white/40">DED: {m.ded}</div>}
           </div>
-          <button onClick={() => setData(null)}
-            className="ml-auto text-xs text-white/30 hover:text-white/60 transition">
-            Cerrar sesion
-          </button>
         </div>
 
-        {/* KPIs asistencia */}
-        <div className="grid grid-cols-3 gap-3">
+        {/* KPIs — 4 tarjetas */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
             <div className="text-2xl font-bold text-emerald-400">{data.totalAno}</div>
             <div className="text-xs text-white/50 mt-1">Asistencias este ano</div>
@@ -82,34 +114,46 @@ export default function PortalClient() {
             <div className="text-xs text-white/50 mt-1">Este mes</div>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-            <div className="text-2xl font-bold text-white/80">{m.estado_membresia ?? "—"}</div>
+            <div className="text-2xl font-bold text-violet-400">{data.eventosUnicos}</div>
+            <div className="text-xs text-white/50 mt-1">Eventos distintos</div>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
+            <div className="text-lg font-bold text-white/80 leading-tight mt-1">{m.estado_membresia ?? "—"}</div>
             <div className="text-xs text-white/50 mt-1">Membresia</div>
           </div>
         </div>
 
-        {/* Datos personales */}
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-3">
-          <div className="font-semibold text-white/80">Mis datos</div>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            {[
-              ["Correo", m.correo_electronico],
-              ["Telefono", m.telefono],
-              ["Direccion", m.direccion ? `${m.direccion}${m.comuna ? ", " + m.comuna : ""}` : null],
-              ["Fecha nacimiento", m.fecha_nacimiento ? fmtFecha(m.fecha_nacimiento) : null],
-              ["Sexo", m.sexo],
-              ["Membresia", m.estado_membresia],
-            ].map(([label, value]) => value ? (
-              <div key={label as string}>
-                <div className="text-xs text-white/40">{label}</div>
-                <div className="text-white/80">{value}</div>
-              </div>
-            ) : null)}
+        {/* Asistencias por evento */}
+        {data.porEvento.length > 0 && (
+          <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+            <div className="px-5 py-4 border-b border-white/10 font-semibold text-sm">
+              Asistencias por evento ({new Date().getFullYear()})
+            </div>
+            <div className="divide-y divide-white/5">
+              {data.porEvento.map((e, i) => {
+                const pct = data.totalAno > 0 ? Math.round((e.total / data.totalAno) * 100) : 0;
+                return (
+                  <div key={i} className="px-5 py-3 flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-white/90 truncate">{e.evento}</div>
+                      <div className="mt-1.5 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <div className="h-full rounded-full bg-emerald-500/70"
+                          style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                    <div className="text-sm font-semibold text-white/70 tabular-nums shrink-0">
+                      {e.total} <span className="text-xs font-normal text-white/30">vez{e.total !== 1 ? "" : ""}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Historial asistencias */}
+        {/* Historial completo */}
         <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/10 font-semibold">
+          <div className="px-5 py-4 border-b border-white/10 font-semibold text-sm">
             Historial de asistencias ({new Date().getFullYear()})
           </div>
           {data.asistencias.length === 0 ? (
