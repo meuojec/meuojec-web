@@ -68,7 +68,7 @@ export default async function PresupuestoPage(props: {
       {/* Selector de mes */}
       <form method="get" className="flex items-center gap-2">
         <label className="text-sm text-white/60">Mes:</label>
-        <select name="mes" defaultValue={mes} onChange="this.form.submit()"
+        <select name="mes" defaultValue={mes} 
           className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none">
           {opciones.map(o => (
             <option key={o.val} value={o.val}>{o.label}</option>
