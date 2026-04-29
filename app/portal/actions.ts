@@ -7,7 +7,6 @@ export type MiembroPortal = {
   nombres: string | null;
   apellidos: string | null;
   fecha_nacimiento: string | null;
-  email: string | null;
   telefono: string | null;
   direccion: string | null;
   sexo: string | null;
@@ -60,7 +59,7 @@ export async function consultarPortal(fd: FormData): Promise<PortalResult> {
   for (const v of variants) {
     const { data, error } = await admin
       .from("miembros")
-      .select("rut,nombres,apellidos,fecha_nacimiento,email,telefono,direccion,sexo,ded,estado,fecha_ingreso,foto_url")
+      .select("rut,nombres,apellidos,fecha_nacimiento,telefono,direccion,sexo,ded,estado,fecha_ingreso,foto_url")
       .eq("rut", v)
       .maybeSingle();
     if (error) { lastError = error.message; }

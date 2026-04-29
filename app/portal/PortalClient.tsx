@@ -92,7 +92,6 @@ export default function PortalClient() {
           <div className="font-semibold text-white/80">Mis datos</div>
           <div className="grid grid-cols-2 gap-3 text-sm">
             {[
-              ["Email", m.email],
               ["Telefono", m.telefono],
               ["Direccion", m.direccion],
               ["Fecha nacimiento", m.fecha_nacimiento ? fmtFecha(m.fecha_nacimiento) : null],
