@@ -7,31 +7,31 @@ on:
 
 jobs:
   backup:
-    name: Supabase CSV ZIP Artifact
+    name: Supabase CSV ZIP Storage
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - name: Instalar dependencias
-        run: npm install archiver @supabase/supabase-js
+        run: npm install archiver @supabase/supabase-js node-fetch
 
       - name: Crear directorio temporal
         run: mkdir -p tmp/backup
 
-      - name: Exportar tablas y crear ZIP
+      - name: Exportar y subir backup
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           node --input-type=module << 'NODEOF'
           import { createClient } from "@supabase/supabase-js";
-          import { createWriteStream } from "fs";
-          import { writeFile, rm } from "fs/promises";
+          import { createWriteStream, readFileSync } from "fs";
+          import { writeFile, rm, readdir } from "fs/promises";
           import { join } from "path";
           import archiver from "archiver";
 
           const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
-          if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) { console.error("Faltan vars Supabase"); process.exit(1); }
+          if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) { console.error("Faltan vars"); process.exit(1); }
 
           const TABLES = [
             "miembros","miembros_historial","profiles","asistencias","eventos","eventos_sesiones",
@@ -68,6 +68,9 @@ jobs:
           console.log("Backup MEUOJEC:", label);
           const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
+          // Crear bucket si no existe
+          await sb.storage.createBucket("backups", { public: false }).catch(() => {});
+
           let ok = 0, fail = 0;
           for (const t of TABLES) {
             try {
@@ -81,8 +84,9 @@ jobs:
             }
           }
 
-          if (ok === 0) { console.error("Ninguna tabla exportada — revisa SUPABASE_SERVICE_ROLE_KEY"); process.exit(1); }
+          if (ok === 0) { console.error("Ninguna tabla exportada"); process.exit(1); }
 
+          // Crear ZIP
           await new Promise((res, rej) => {
             const out = createWriteStream(zipPath);
             const arc = archiver("zip", { zlib: { level: 9 } });
@@ -90,10 +94,26 @@ jobs:
             arc.pipe(out); arc.directory(tmpDir, false); arc.finalize();
           });
           console.log("ZIP creado:", zipPath);
-          console.log("Completado:", ok, "OK,", fail, "advertencias");
+
+          // Subir a Supabase Storage
+          const zipBuffer = readFileSync(zipPath);
+          const { error: uploadError } = await sb.storage
+            .from("backups")
+            .upload("meuojec-backup-" + label + ".zip", zipBuffer, {
+              contentType: "application/zip",
+              upsert: true
+            });
+
+          if (uploadError) {
+            console.error("Error subiendo a Storage:", uploadError.message);
+            process.exit(1);
+          }
+
+          console.log("Subido a Supabase Storage: backups/meuojec-backup-" + label + ".zip");
+          console.log("Completado:", ok, "tablas OK,", fail, "advertencias");
           NODEOF
 
-      - name: Guardar backup como Artifact
+      - name: Guardar también como GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
           name: meuojec-backup-${{ github.run_id }}
