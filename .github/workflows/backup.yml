@@ -1,15 +1,13 @@
-name: 🗂 Backup semanal a Google Drive
+name: Backup semanal a Google Drive
 
 on:
   schedule:
-    # Domingo 04:00 UTC = ~medianoche hora Chile (America/Santiago)
     - cron: "0 4 * * 0"
-  # Permite ejecutar manualmente desde GitHub Actions → "Run workflow"
   workflow_dispatch:
 
 jobs:
   backup:
-    name: Supabase → CSV → ZIP → Google Drive
+    name: Supabase CSV ZIP Google Drive
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -26,7 +24,7 @@ jobs:
       - name: Instalar dependencias del proyecto
         run: npm ci
 
-      - name: Instalar dependencias del script de backup
+      - name: Instalar dependencias de backup
         run: npm install --no-save googleapis archiver
 
       - name: Crear directorio temporal
@@ -42,4 +40,4 @@ jobs:
 
       - name: Resumen
         if: always()
-        run: echo "Backup finalizado — revisar logs arriba para detalles"
+        run: echo "Backup finalizado"
