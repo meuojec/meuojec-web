@@ -139,7 +139,7 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
     <aside className="h-full w-72 border-r border-white/10 bg-black/40 backdrop-blur px-6 py-8 overflow-y-auto flex flex-col">
       <div className="mb-8 px-3">
         <div className="text-xl font-bold tracking-wide text-white">MEUOJEC</div>
-        <div className="text-sm text-white/50">Panel de gestion</div>
+        <div className="text-sm text-white/50">Sistema de administracion</div>
       </div>
 
       <div className="flex-1">
