@@ -8,11 +8,12 @@ export type MiembroPortal = {
   apellidos: string | null;
   fecha_nacimiento: string | null;
   telefono: string | null;
+  correo_electronico: string | null;
   direccion: string | null;
+  comuna: string | null;
   sexo: string | null;
   ded: string | null;
-  estado: string | null;
-  fecha_ingreso: string | null;
+  estado_membresia: string | null;
   foto_url: string | null;
 };
 
@@ -59,7 +60,7 @@ export async function consultarPortal(fd: FormData): Promise<PortalResult> {
   for (const v of variants) {
     const { data, error } = await admin
       .from("miembros")
-      .select("rut,nombres,apellidos,fecha_nacimiento,telefono,direccion,sexo,ded,estado,fecha_ingreso,foto_url")
+      .select("rut,nombres,apellidos,fecha_nacimiento,telefono,correo_electronico,direccion,comuna,sexo,ded,estado_membresia,foto_url")
       .eq("rut", v)
       .maybeSingle();
     if (error) { lastError = error.message; }

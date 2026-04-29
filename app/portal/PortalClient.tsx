@@ -82,8 +82,8 @@ export default function PortalClient() {
             <div className="text-xs text-white/50 mt-1">Este mes</div>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-            <div className="text-2xl font-bold text-white/80">{m.estado ?? "—"}</div>
-            <div className="text-xs text-white/50 mt-1">Estado</div>
+            <div className="text-2xl font-bold text-white/80">{m.estado_membresia ?? "—"}</div>
+            <div className="text-xs text-white/50 mt-1">Membresia</div>
           </div>
         </div>
 
@@ -92,11 +92,12 @@ export default function PortalClient() {
           <div className="font-semibold text-white/80">Mis datos</div>
           <div className="grid grid-cols-2 gap-3 text-sm">
             {[
+              ["Correo", m.correo_electronico],
               ["Telefono", m.telefono],
-              ["Direccion", m.direccion],
+              ["Direccion", m.direccion ? `${m.direccion}${m.comuna ? ", " + m.comuna : ""}` : null],
               ["Fecha nacimiento", m.fecha_nacimiento ? fmtFecha(m.fecha_nacimiento) : null],
-              ["Fecha ingreso", m.fecha_ingreso ? fmtFecha(m.fecha_ingreso) : null],
               ["Sexo", m.sexo],
+              ["Membresia", m.estado_membresia],
             ].map(([label, value]) => value ? (
               <div key={label as string}>
                 <div className="text-xs text-white/40">{label}</div>
