@@ -137,6 +137,7 @@ function FinanzasSubmenu({ enabled }: { enabled: boolean }) {
         {[
           { href: "/dashboard/finanzas/dashboard",        label: "Dashboard",       icon: false },
           { href: "/dashboard/finanzas/transacciones",   label: "Transacciones",   icon: true },
+          { href: "/dashboard/finanzas/presupuesto",     label: "Presupuesto",     icon: false },
           { href: "/dashboard/finanzas/contribuciones",  label: "Contribuciones",  icon: false },
           { href: "/dashboard/finanzas/cuentas",         label: "Cuentas",         icon: false },
           { href: "/dashboard/finanzas/categorias",      label: "Categorias",      icon: false },
@@ -209,7 +210,6 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
         <Section title="SISTEMA" items={sistema} />
         <FinanzasSubmenu enabled={!!navPerms.fin} />
       </div>
-
       {/* Footer con creditos del desarrollador */}
       <div className="mt-8 border-t border-white/10 pt-5 px-1">
         <div className="text-[10px] text-white/25 leading-relaxed">
@@ -223,7 +223,7 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
             >
               Jerry Sainteron
             </a>
-ot; · Todos los derechos reservados
+            {" · Todos los derechos reservados"}
           </div>
         </div>
       </div>
