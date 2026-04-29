@@ -9,7 +9,6 @@ import {
   ClipboardList,
   CalendarDays,
   BarChart3,
-  Wallet,
   Settings,
   Package,
   BookOpen,
@@ -18,6 +17,12 @@ import {
   Heart,
   Megaphone,
   CalendarRange,
+  ArrowLeftRight,
+  Target,
+  Gift,
+  Landmark,
+  Tag,
+  Lock,
 } from "lucide-react";
 
 type NavPerms = {
@@ -91,94 +96,19 @@ function Section({ title, items }: { title: string; items: NavItem[] }) {
   );
 }
 
-function FinanzasSubmenu({ enabled }: { enabled: boolean }) {
-  const pathname = usePathname();
-  if (!enabled) return null;
-
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + "/");
-
-  const base = "/dashboard/finanzas";
-  const open = pathname === base || pathname.startsWith(base + "/");
-
-  if (!open) {
-    return (
-      <div className="mt-2">
-        <Link
-          href="/dashboard/finanzas/transacciones"
-          className={[
-            "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
-            isActive("/dashboard/finanzas/transacciones")
-              ? "bg-zinc-800 text-white"
-              : "text-white/70 hover:bg-white/5 hover:text-white",
-          ].join(" ")}
-        >
-          <span
-            className={[
-              "absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r transition-all",
-              isActive("/dashboard/finanzas/transacciones")
-                ? "w-1 bg-white"
-                : "w-0 bg-transparent",
-            ].join(" ")}
-          />
-          <Wallet className="h-4 w-4 opacity-90" />
-          <span>Finanzas</span>
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-2">
-      <div className="px-3 text-xs font-semibold tracking-wider text-white/30 uppercase">
-        Finanzas
-      </div>
-      <nav className="mt-2 space-y-1">
-        {[
-          { href: "/dashboard/finanzas/dashboard",        label: "Dashboard",       icon: false },
-          { href: "/dashboard/finanzas/transacciones",   label: "Transacciones",   icon: true },
-          { href: "/dashboard/finanzas/presupuesto",     label: "Presupuesto",     icon: false },
-          { href: "/dashboard/finanzas/contribuciones",  label: "Contribuciones",  icon: false },
-          { href: "/dashboard/finanzas/cuentas",         label: "Cuentas",         icon: false },
-          { href: "/dashboard/finanzas/categorias",      label: "Categorias",      icon: false },
-          { href: "/dashboard/finanzas/cierres",         label: "Cierres",         icon: false },
-        ].map(({ href, label, icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={[
-              "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
-              isActive(href) ? "bg-zinc-800 text-white" : "text-white/70 hover:bg-white/5 hover:text-white",
-            ].join(" ")}
-          >
-            <span
-              className={[
-                "absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r transition-all",
-                isActive(href) ? "w-1 bg-white" : "w-0 bg-transparent",
-              ].join(" ")}
-            />
-            {icon ? <Wallet className="h-4 w-4 opacity-90" /> : <span className="w-4" />}
-            <span>{label}</span>
-          </Link>
-        ))}
-      </nav>
-    </div>
-  );
-}
-
 export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
   const gestion: NavItem[] = [
-    { label: "Dashboard",    href: "/dashboard",              icon: LayoutDashboard, enabled: !!navPerms.dash },
-    { label: "Miembros",     href: "/dashboard/miembros",     icon: Users,           enabled: !!navPerms.miembros },
-    { label: "Asistencias",  href: "/dashboard/asistencias",  icon: ClipboardList,   enabled: !!navPerms.asist },
-    { label: "Eventos",      href: "/dashboard/eventos",      icon: CalendarDays,    enabled: !!navPerms.eventos },
-    { label: "Esc. Dominical", href: "/dashboard/ded/sesion", icon: BookOpen,        enabled: !!navPerms.ded },
+    { label: "Dashboard",      href: "/dashboard",              icon: LayoutDashboard, enabled: !!navPerms.dash },
+    { label: "Miembros",       href: "/dashboard/miembros",     icon: Users,           enabled: !!navPerms.miembros },
+    { label: "Asistencias",    href: "/dashboard/asistencias",  icon: ClipboardList,   enabled: !!navPerms.asist },
+    { label: "Eventos",        href: "/dashboard/eventos",      icon: CalendarDays,    enabled: !!navPerms.eventos },
+    { label: "Esc. Dominical", href: "/dashboard/ded/sesion",   icon: BookOpen,        enabled: !!navPerms.ded },
   ];
 
   const pastoral: NavItem[] = [
-    { label: "Visitantes",   href: "/dashboard/visitantes",   icon: UserCheck, enabled: !!navPerms.visitantes },
-    { label: "Pastoral",     href: "/dashboard/pastoral",     icon: Heart,     enabled: !!navPerms.pastoral },
-    { label: "Ministerios",  href: "/dashboard/ministerios",  icon: Church,    enabled: !!navPerms.ministerios },
+    { label: "Visitantes",  href: "/dashboard/visitantes",  icon: UserCheck, enabled: !!navPerms.visitantes },
+    { label: "Pastoral",    href: "/dashboard/pastoral",    icon: Heart,     enabled: !!navPerms.pastoral },
+    { label: "Ministerios", href: "/dashboard/ministerios", icon: Church,    enabled: !!navPerms.ministerios },
   ];
 
   const comunicacion: NavItem[] = [
@@ -188,6 +118,16 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
 
   const analisis: NavItem[] = [
     { label: "Reportes", href: "/dashboard/reportes", icon: BarChart3, enabled: !!navPerms.reportes },
+  ];
+
+  const finanzas: NavItem[] = [
+    { label: "Dashboard",      href: "/dashboard/finanzas/dashboard",      icon: LayoutDashboard, enabled: !!navPerms.fin },
+    { label: "Transacciones",  href: "/dashboard/finanzas/transacciones",  icon: ArrowLeftRight,  enabled: !!navPerms.fin },
+    { label: "Presupuesto",    href: "/dashboard/finanzas/presupuesto",    icon: Target,          enabled: !!navPerms.fin },
+    { label: "Contribuciones", href: "/dashboard/finanzas/contribuciones", icon: Gift,            enabled: !!navPerms.fin },
+    { label: "Cuentas",        href: "/dashboard/finanzas/cuentas",        icon: Landmark,        enabled: !!navPerms.fin },
+    { label: "Categorias",     href: "/dashboard/finanzas/categorias",     icon: Tag,             enabled: !!navPerms.fin },
+    { label: "Cierres",        href: "/dashboard/finanzas/cierres",        icon: Lock,            enabled: !!navPerms.fin },
   ];
 
   const sistema: NavItem[] = [
@@ -203,14 +143,15 @@ export default function Sidebar({ navPerms }: { navPerms: NavPerms }) {
       </div>
 
       <div className="flex-1">
-        <Section title="GESTION" items={gestion} />
-        <Section title="PASTORAL" items={pastoral} />
-        <Section title="COMUNICACION" items={comunicacion} />
-        <Section title="ANALISIS" items={analisis} />
-        <Section title="SISTEMA" items={sistema} />
-        <FinanzasSubmenu enabled={!!navPerms.fin} />
+        <Section title="GESTION"       items={gestion} />
+        <Section title="PASTORAL"      items={pastoral} />
+        <Section title="COMUNICACION"  items={comunicacion} />
+        <Section title="ANALISIS"      items={analisis} />
+        <Section title="FINANZAS"      items={finanzas} />
+        <Section title="SISTEMA"       items={sistema} />
       </div>
-      {/* Footer con creditos del desarrollador */}
+
+      {/* Footer */}
       <div className="mt-8 border-t border-white/10 pt-5 px-1">
         <div className="text-[10px] text-white/25 leading-relaxed">
           <div className="mb-1">

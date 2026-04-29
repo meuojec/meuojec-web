@@ -78,9 +78,8 @@ export async function consultarPortal(fd: FormData): Promise<PortalResult> {
   const rut: string = m?.rut ?? variants[0];
 
   if (!m) {
-    // Si hay error de Supabase, mostrarlo para diagnóstico
-    if (lastError) return { ok: false, error: `Error de conexión: ${lastError}` };
-    return { ok: false, error: `RUT no encontrado (buscado: ${variants.join(" / ")})` };
+    if (lastError) return { ok: false, error: "Error de conexión. Intenta nuevamente." };
+    return { ok: false, error: "RUT no encontrado. Verifica que esté registrado como miembro." };
   }
 
   // Verificar fecha de nacimiento
